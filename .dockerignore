@@ -1,0 +1,31 @@
+# Игнорировать локальные окружения и зависимости
+.venv/
+venv/
+env/
+__pycache__/
+*.pyc
+*.pyo
+
+# Игнорировать систему контроля версий
+.git/
+.gitignore
+
+# Игнорировать файлы окружения (секреты)
+.env
+.env.*
+
+# Игнорировать логи и временные данные
+logs/
+*.log
+temp/
+
+# Игнорировать конфигурации IDE
+.vscode/
+.idea/
+
+# Игнорировать файлы самого Docker
+Dockerfile
+.dockerignore
+docker-compose.yml
+docker-compose.override.yml
+

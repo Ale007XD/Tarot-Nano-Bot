@@ -1,0 +1,10 @@
+services:
+  tarot-bot:
+    build: .
+    container_name: tarot-bot
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+
