@@ -23,9 +23,9 @@ temp/
 .vscode/
 .idea/
 
-# Игнорировать файлы самого Docker
-Dockerfile
-.dockerignore
-docker-compose.yml
-docker-compose.override.yml
+# ИГНОРИРОВАТЬ СИСТЕМНЫЕ ПАПКИ RUNNER'А (ОБЯЗАТЕЛЬНО!)
+actions-runner/
+_work/
 
+# ВАЖНО: НЕ игнорируйте Dockerfile и docker-compose.yml, 
+# иначе Docker не сможет начать сборку.
