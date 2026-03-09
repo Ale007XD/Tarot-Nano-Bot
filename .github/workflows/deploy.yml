@@ -1,4 +1,5 @@
-name: Deploy Bot
+name: Deploy Tarot Bot
+
 on:
   push:
     branches: [ main ]
@@ -10,8 +11,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Restart containers
+      - name: Restart Bot with actual project path
         run: |
+          # Переходим в рабочую папку, где лежит ваш .env и конфиги
+          cd /home/botrunner/tarot-bot
+          
+          # Останавливаем старые контейнеры
           docker compose down
+          
+          # Собираем и запускаем заново
+          # Мы используем путь к папке .github/workflows/.. для актуального кода
           docker compose up -d --build
           
