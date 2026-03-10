@@ -11,15 +11,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Restart Bot with actual project path
+      - name: Build and Deploy
         run: |
-          # Переходим в рабочую папку, где лежит ваш .env и конфиги
-          cd /home/botrunner/tarot-bot
+          # Переходим в директорию репозитория (автоматическая переменная GitHub)
+          # Это гарантирует, что контекст сборки будет содержать только файлы проекта
+          cd ${{ github.workspace }}
           
           # Останавливаем старые контейнеры
           docker compose down
           
           # Собираем и запускаем заново
-          # Мы используем путь к папке .github/workflows/.. для актуального кода
+          # Кэш образов будет использован, если зависимости не изменились
           docker compose up -d --build
           
+          # (Опционально) Удаляем висящие образы для экономии места на диске
+          docker image prune -f
