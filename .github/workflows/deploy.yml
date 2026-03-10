@@ -11,18 +11,21 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Copy environment file
+        run: |
+          # Копируем .env из постоянного хранилища в рабочую директорию
+          cp /home/botrunner/tarot-bot/.env ${{ github.workspace }}/.env
+          
       - name: Build and Deploy
         run: |
-          # Переходим в директорию репозитория (автоматическая переменная GitHub)
-          # Это гарантирует, что контекст сборки будет содержать только файлы проекта
+          # Переходим в директорию репозитория
           cd ${{ github.workspace }}
           
           # Останавливаем старые контейнеры
           docker compose down
           
           # Собираем и запускаем заново
-          # Кэш образов будет использован, если зависимости не изменились
           docker compose up -d --build
           
-          # (Опционально) Удаляем висящие образы для экономии места на диске
+          # Очищаем старые образы для экономии места
           docker image prune -f
