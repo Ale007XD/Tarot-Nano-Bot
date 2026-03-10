@@ -1,3 +1,4 @@
+# bot/database.py
 import aiosqlite
 from bot.config import DB_PATH
 
@@ -77,18 +78,26 @@ async def get_user(user_id):
 
         return await cursor.fetchone()
 
+
+# ====================== НОВЫЕ ФУНКЦИИ ДЛЯ МОНЕТИЗАЦИИ ======================
+
 async def decrement_free_spreads(user_id: int):
+    """Тратим одно бесплатное гадание (от рефералов)"""
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute(
-            "UPDATE users SET free_spreads = free_spreads - 1 WHERE user_id=? AND free_spreads > 0",
+            "UPDATE users SET free_spreads = free_spreads - 1 "
+            "WHERE user_id=? AND free_spreads > 0",
             (user_id,)
         )
         await db.commit()
 
+
 async def save_reading(user_id: int, spread: str, cards: str, interpretation: str, paid: int):
+    """Сохраняем каждое гадание в историю"""
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute(
-            "INSERT INTO readings(user_id, spread, cards, interpretation, paid) VALUES(?,?,?,?,?)",
+            "INSERT INTO readings(user_id, spread, cards, interpretation, paid) "
+            "VALUES(?,?,?,?,?)",
             (user_id, spread, cards, interpretation, paid)
         )
         await db.commit()
