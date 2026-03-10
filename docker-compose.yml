@@ -3,8 +3,20 @@ services:
     build: .
     container_name: tarot-bot
     restart: always
-    env_file:
-      - .env
+    # Убираем env_file, так как переменные будут пробрасываться через окружение сервера
+    # Это надежнее для CI/CD, чтобы не создавать лишних файлов
+    environment:
+      - PYTHONUNBUFFERED=1
+      # Переменные здесь можно не прописывать, если они экспортируются 
+      # в окружение при запуске контейнера через CI/CD
     volumes:
-      - .:/app
+      # Используем полные пути или относительные, важно наличие этих файлов на хосте
+      - ./tarot.db:/app/tarot.db
+      - ./bot.log:/app/bot.log
+    healthcheck:
+      # Убедись, что файл healthcheck.py существует в корне проекта
+      test: ["CMD", "python", "healthcheck.py"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
