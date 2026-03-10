@@ -41,7 +41,6 @@ Explain past, present and future in 2-3 beautiful paragraphs.
             r = await client.post(url, headers=headers, json=json_data)
             data = r.json()
 
-            # ←←← НОВОЕ: подробное логирование ошибок
             if r.status_code != 200 or "choices" not in data:
                 error_msg = data.get("error", {}).get("message", str(data))
                 print(f"❌ LLM ERROR {r.status_code}: {error_msg}")
