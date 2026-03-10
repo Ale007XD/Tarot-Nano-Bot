@@ -48,16 +48,26 @@ async def buy(callback: CallbackQuery):
         await create_reading_invoice(callback.bot, callback.from_user.id)
 
 
-async def process_reading(callback: CallbackQuery, paid: int):
-    """Единая функция генерации и сохранения полного чтения"""
+async def process_reading(sender, paid: int):
+    """Единая функция генерации и сохранения полного чтения
+    sender может быть CallbackQuery ИЛИ Message"""
+    
+    if isinstance(sender, CallbackQuery):
+        user_id = sender.from_user.id
+        answer_func = sender.message.answer          # отвечаем в тот же чат
+    else:
+        # sender — это Message (успешная оплата)
+        user_id = sender.from_user.id
+        answer_func = sender.answer
+
     spread_data = draw_spread()
     cards_text = "\n".join([f"{pos}: {card}" for pos, card in spread_data])
     
     interpretation = await generate_reading(cards_text)
 
-    # Сохраняем в базу (для аналитики и истории)
+    # Сохраняем в базу
     await save_reading(
-        user_id=callback.from_user.id,
+        user_id=user_id,
         spread="Past-Present-Future",
         cards=cards_text,
         interpretation=interpretation,
@@ -74,4 +84,4 @@ async def process_reading(callback: CallbackQuery, paid: int):
 Хотите ещё одно гадание? Приглашайте друзей — получите бесплатно! 👇
 """
 
-    await callback.message.answer(text, reply_markup=share_kb())
+    await answer_func(text, reply_markup=share_kb())
