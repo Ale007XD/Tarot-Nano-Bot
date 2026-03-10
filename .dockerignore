@@ -1,31 +1,51 @@
-# Игнорировать локальные окружения и зависимости
-.venv/
-venv/
-env/
+# --- Python ---
 __pycache__/
-*.pyc
-*.pyo
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+env.bak/
+venv.bak/
+pip-log.txt
+pip-delete-this-directory.txt
 
-# Игнорировать систему контроля версий
+# --- Git и секреты ---
 .git/
-.gitignore
-
-# Игнорировать файлы окружения (секреты)
+.gitlab-ci.yml
 .env
 .env.*
+*.pem
 
-# Игнорировать логи и временные данные
-logs/
-*.log
-temp/
-
-# Игнорировать конфигурации IDE
-.vscode/
+# --- IDE и ОС ---
 .idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
 
-# ИГНОРИРОВАТЬ СИСТЕМНЫЕ ПАПКИ RUNNER'А (ОБЯЗАТЕЛЬНО!)
-actions-runner/
+# --- Тесты и документация (часто занимают много места) ---
+tests/
+test/
+docs/
+*.md
+README*
+LICENSE
+
+# --- Архивы и бинарники (чтобы случайно не затянуть в билд) ---
+*.tar
+*.tar.gz
+*.zip
+*.whl
+*.exe
+*.dll
+*.so
+
+# --- Actions Runner (строгие правила) ---
+# Игнорируем папку и всё её содержимое рекурсивно
+actions-runner
+actions-runner/**
 _work/
-
-# ВАЖНО: НЕ игнорируйте Dockerfile и docker-compose.yml, 
-# иначе Docker не сможет начать сборку.
