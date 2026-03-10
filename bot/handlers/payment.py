@@ -17,7 +17,8 @@ async def pre_checkout(pre: PreCheckoutQuery):
 @router.message(lambda m: m.successful_payment is not None)
 async def success_payment(message: Message):
     """Пользователь успешно оплатил через Telegram Stars"""
-    await message.answer("✅ Оплата прошла успешно! 🔮")
+    await message.answer("✅ Оплата прошла успешно! 🔮 Готовим ваше чтение...")
 
-    # Запускаем генерацию полного чтения
+    # Поздний импорт — решает проблему circular import
+    from bot.handlers.tarot import process_reading
     await process_reading(message, paid=1)
