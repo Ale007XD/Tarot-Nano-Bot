@@ -1,4 +1,4 @@
-name: Project Snapshot for LLM
+name: LLM Snapshot Pipeline
 
 on:
   workflow_dispatch:
@@ -8,70 +8,192 @@ on:
 jobs:
   snapshot:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Install tools
-        run: sudo apt-get update && sudo apt-get install -y tree jq
-
-      # ИСПРАВЛЕНО: добавлено отсутствующее свойство name
-      - name: Generate tree.json
-        run: tree -I '.git|node_modules|dist|build|*.log' -a -J > tree.json
-
-      - name: Generate JSON snapshot
+      - name: Install dependencies
         run: |
-          git ls-files --cached --exclude-standard > files_list.txt
+          sudo apt-get update
+          sudo apt-get install -y tree jq
 
-          # ИСПРАВЛЕНО: добавлена инициализация с пустым массивом файлов
-          echo '{"commit": "'$(git rev-parse HEAD)'", "branch": "'$(git branch --show-current)'", "files": []}' > project-snapshot.json
+      ###########################################################
+      # DIRECTORY TREE
+      ###########################################################
+
+      - name: Generate repository tree
+        run: |
+          tree \
+            -a \
+            -I '.git|node_modules|dist|build|coverage|__pycache__|*.log|*.png|*.jpg|*.jpeg|*.gif|*.svg|*.pdf|*.zip' \
+            --dirsfirst \
+            > tree.txt
+
+      ###########################################################
+      # PREPARE SNAPSHOT STRUCTURE
+      ###########################################################
+
+      - name: Prepare snapshot directories
+        run: |
+          mkdir -p snapshot/chunks
+          mkdir -p snapshot/meta
+
+      ###########################################################
+      # CREATE MANIFEST
+      ###########################################################
+
+      - name: Create manifest
+        run: |
+          cat > snapshot/manifest.json <<EOF
+          {
+            "snapshot_version": 1,
+            "commit": "$(git rev-parse HEAD)",
+            "branch": "$(git branch --show-current)",
+            "created_at": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
+            "files": []
+          }
+          EOF
+
+      ###########################################################
+      # BUILD CHUNKED FILE PROJECTIONS
+      ###########################################################
+
+      - name: Generate chunked projections
+        shell: bash
+        run: |
+          git ls-files > files.txt
+
+          chunk_index=0
 
           while IFS= read -r file; do
-            rel_path="./$file"
-            if [ -f "$rel_path" ]; then
-              size=$(stat -c%s "$rel_path" 2>/dev/null || echo 0)
-              if [ "$size" -lt 500000 ] && [[ "$file" =~ \.(py|js|ts|jsx|tsx|json|md|txt|yml|yaml|sh|cfg|ini|toml)$ ]]; then
-                content=$(cat "$rel_path" 2>/dev/null | base64 -w0 || echo "[Error]")
-              else
-                content="[File excluded or too large]"
-              fi
-              # ИСПРАВЛЕНО: оптимизирована запись в JSON через sponge (из пакета moreutils)
-              # Альтернатива без sponge: использование временного файла
-              jq --arg path "$file" --arg content "$content" --arg size "$size" \
-                '.files += [{path: $path, size: ($size | tonumber), content: $content}]' \
-                project-snapshot.json > tmp.json && mv tmp.json project-snapshot.json
+
+            if [ ! -f "$file" ]; then
+              continue
             fi
-          done < files_list.txt
 
-          # ИСПРАВЛЕНО: удаление временных файлов
-          rm -f files_list.txt
+            size=$(stat -c%s "$file" 2>/dev/null || echo 0)
 
-      - name: Generate MD dump
+            # Skip binaries and large files
+            if [ "$size" -gt 300000 ]; then
+              continue
+            fi
+
+            case "$file" in
+              *.py|*.js|*.ts|*.tsx|*.jsx|*.json|*.md|*.txt|*.yaml|*.yml|*.sh|*.toml|*.ini)
+                ;;
+              *)
+                continue
+                ;;
+            esac
+
+            ext="${file##*.}"
+
+            chunk_file=$(printf "snapshot/chunks/chunk_%05d.md" "$chunk_index")
+
+            sha=$(sha256sum "$file" | awk '{print $1}')
+
+            {
+              echo "FILE: $file"
+              echo "SIZE: $size"
+              echo "SHA256: $sha"
+              echo ""
+              echo '```'"$ext"
+              cat "$file"
+              echo ""
+              echo '```'
+            } > "$chunk_file"
+
+            jq \
+              --arg path "$file" \
+              --arg sha "$sha" \
+              --arg chunk "$(basename "$chunk_file")" \
+              --argjson size "$size" \
+              '.files += [{
+                path: $path,
+                sha256: $sha,
+                size: $size,
+                chunk: $chunk
+              }]' \
+              snapshot/manifest.json \
+              > snapshot/manifest.tmp
+
+            mv snapshot/manifest.tmp snapshot/manifest.json
+
+            chunk_index=$((chunk_index + 1))
+
+          done < files.txt
+
+      ###########################################################
+      # GENERATE COMBINED MARKDOWN SNAPSHOT
+      ###########################################################
+
+      - name: Generate combined markdown snapshot
         run: |
-          echo "# Полный снапшот проекта для LLM" > project-snapshot.md
-          echo "## Commit: $(git rev-parse HEAD)" >> project-snapshot.md
-          echo "## Branch: $(git branch --show-current)" >> project-snapshot.md
-          echo "## Дата: $(date)" >> project-snapshot.md
-          echo "## Файлов: $(jq '.files | length' project-snapshot.json)" >> project-snapshot.md
-          echo "" >> project-snapshot.md
-          tree -I '.git|node_modules|dist|build|*.log' -a >> project-snapshot.md
-          echo "" >> project-snapshot.md
+          OUTPUT="snapshot/project-snapshot.md"
 
-          # ИСПРАВЛЕНО: исправлен синтаксис jq - select вместо незавершенного условия
-          # ИСПРАВЛЕНО: правильная декодировка base64 и форматирование
-          jq -r '.files[] | select(.content != "[File excluded or too large]") | 
-            "## \(.path) (размер: \(.size) bytes)\n```\n\(.content | @base64d)\n```"' \
-            project-snapshot.json >> project-snapshot.md
+          {
+            echo "# Project Snapshot"
+            echo ""
+            echo "## Commit"
+            echo "$(git rev-parse HEAD)"
+            echo ""
+            echo "## Branch"
+            echo "$(git branch --show-current)"
+            echo ""
+            echo "## Generated"
+            echo "$(date -u)"
+            echo ""
+            echo "## Repository Tree"
+            echo ""
+            echo '```'
+            cat tree.txt
+            echo '```'
+            echo ""
+
+            for chunk in snapshot/chunks/*.md; do
+              cat "$chunk"
+              echo ""
+              echo "---"
+              echo ""
+            done
+
+          } > "$OUTPUT"
+
+      ###########################################################
+      # OPTIONAL SEMANTIC INDEX
+      ###########################################################
+
+      - name: Generate semantic index
+        run: |
+          cat > snapshot/meta/semantic-index.json <<EOF
+          {
+            "python_files": $(find . -name "*.py" | jq -R . | jq -s .),
+            "markdown_files": $(find . -name "*.md" | jq -R . | jq -s .),
+            "yaml_files": $(find . -name "*.yml" -o -name "*.yaml" | jq -R . | jq -s .)
+          }
+          EOF
+
+      ###########################################################
+      # ARCHIVE
+      ###########################################################
+
+      - name: Create archive
+        run: |
+          tar -czf snapshot.tar.gz snapshot
+
+      ###########################################################
+      # UPLOAD
+      ###########################################################
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: project-snapshot-${{ github.sha }}
+          name: snapshot-${{ github.sha }}
           path: |
-            project-snapshot.json
-            project-snapshot.md
-            tree.json
-          retention-days: 90
-          
+            snapshot/
+            snapshot.tar.gz
+            tree.txt
+          retention-days: 30
