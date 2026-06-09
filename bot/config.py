@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 import os
+import sys
+
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -21,6 +23,6 @@ TAROT_SALT: str = os.getenv("TAROT_SALT", "TAROT_GOVERNANCE_SALT_2026")
 DB_PATH: str = os.getenv("DB_PATH", "tarot.db")
 
 # Validation — skip when running under pytest
-import sys as _sys
-if not TELEGRAM_TOKEN and "pytest" not in _sys.modules:
+if not TELEGRAM_TOKEN and "pytest" not in sys.modules:
     raise ValueError("TELEGRAM_TOKEN not found in .env")
+    
