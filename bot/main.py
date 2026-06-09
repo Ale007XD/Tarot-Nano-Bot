@@ -12,14 +12,15 @@ from bot.database import init_db
 # Импортируем все хендлеры, включая admin и новый history слой
 from bot.handlers import start, tarot, payment, referral, admin, history
 
+
 async def main():
     # Настройка логирования (поможет видеть ошибки админки в консоли)
     logging.basicConfig(level=logging.INFO)
 
     # Инициализация бота с поддержкой Markdown/HTML по умолчанию
     bot = Bot(
-        token=TELEGRAM_TOKEN, 
-        default=DefaultBotProperties(parse_mode=ParseMode.MARKDOWN)
+        token=TELEGRAM_TOKEN,
+        default=DefaultBotProperties(parse_mode=ParseMode.MARKDOWN),
     )
 
     dp = Dispatcher()
@@ -47,4 +48,3 @@ if __name__ == "__main__":
         asyncio.run(main())
     except KeyboardInterrupt:
         print("Bot stopped")
-        

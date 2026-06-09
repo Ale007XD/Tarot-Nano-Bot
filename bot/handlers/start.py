@@ -1,5 +1,4 @@
 from aiogram.filters import Command
-from aiogram.filters import Command
 from aiogram import Router
 from aiogram.types import Message
 from bot.keyboards import start_kb
@@ -18,11 +17,7 @@ async def start(message: Message):
     if len(args) > 1 and args[1].startswith("ref_"):
         ref = int(args[1].replace("ref_", ""))
 
-    await add_user(
-        message.from_user.id,
-        message.from_user.username,
-        ref
-    )
+    await add_user(message.from_user.id, message.from_user.username, ref)
 
     if ref:
         await add_referral(ref, message.from_user.id)

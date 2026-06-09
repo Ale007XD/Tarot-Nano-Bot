@@ -24,4 +24,3 @@ DB_PATH = "tarot.db"
 # Валидация критических переменных (опционально, но полезно для отладки)
 if not TELEGRAM_TOKEN:
     raise ValueError("❌ Ошибка: TELEGRAM_TOKEN не найден в .env файле!")
-

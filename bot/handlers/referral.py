@@ -12,6 +12,4 @@ async def invite(message: Message):
 
     link = f"https://t.me/{(await message.bot.get_me()).username}?start=ref_{user_id}"
 
-    await message.answer(
-        f"Invite friends and get free readings:\n\n{link}"
-    )
+    await message.answer(f"Invite friends and get free readings:\n\n{link}")
