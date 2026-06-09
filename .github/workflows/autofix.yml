@@ -2,7 +2,7 @@ name: Automated Code Style Autofix
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
     paths:
       - '**.py'
 
@@ -10,10 +10,14 @@ jobs:
   ruff-autofix:
     name: Ruff Auto-repair Execution
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     # Защитный сентинел: игнорируем триггер, если автором пуша является сам бот
-    if: github.actor != 'github-actions[bot]'
+    # или в сообщении коммита уже есть маркер [skip ci]
+    if: github.actor != 'github-actions[bot]' && !contains(github.event.head_commit.message, '[skip ci]')
+    
     steps:
-      - name: Checkout Repository with Write Permissions
+      - name: Checkout Repository
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -23,14 +27,16 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install Linting Tools
+      - name: Install Ruff
         run: pip install ruff
 
-      - name: Execute Auto-Fix and Formatting
-        # Исправление импортов, синтаксиса и приведение к line-length=100
-        run: |
-          ruff check --fix --line-length=100 --select=E,F,I,UP .
-          ruff format --line-length=100 .
+      - name: Execute Auto-Fix
+        # Исправление импортов, синтаксиса и приведение к современному Python
+        run: ruff check --fix --select=E,F,I,UP .
+
+      - name: Execute Formatting
+        # Приведение к line-length=100 (поддерживается только для format)
+        run: ruff format --line-length=100 .
 
       - name: Commit and Push Corrected Code
         uses: stefanzweifel/git-auto-commit-action@v5
@@ -38,4 +44,4 @@ jobs:
           commit_message: "style: автоматическое исправление ruff (E,F,I,UP) [skip ci]"
           commit_user_name: "github-actions[bot]"
           commit_user_email: "github-actions[bot]@users.noreply.github.com"
-          
+          file_pattern: '*.py'
