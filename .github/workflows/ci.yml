@@ -14,23 +14,24 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Set up Python 3.12
+      - name: Set up Python 3.14
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: "3.14"
           cache: "pip"
 
       - name: Install Core & Lint Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install ruff mypy pydantic>=2.0 aiosqlite aiogram>=3.0 pytest pytest-asyncio
+          pip install ruff mypy pydantic>=2.0 aiosqlite aiogram>=3.0 pytest pytest-asyncio python-dotenv
 
-      - name: Lint Verification (Ruff)
-        # CI выполняет только проверку соответствия правилам E,F,I,UP
+      - name: Lint Verification (Ruff Check)
         run: ruff check --line-length=100 --select=E,F,I,UP .
 
+      - name: Format Verification (Ruff Format)
+        run: ruff format --check .
+
       - name: Strict Type Check (Mypy)
-        # Соответствие жесткому ограничению: mypy --strict 0 errors
         run: mypy --strict bot/
 
   test:
@@ -41,18 +42,17 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Set up Python 3.12
+      - name: Set up Python 3.14
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: "3.14"
           cache: "pip"
 
       - name: Install Runtime Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install aiogram>=3.0 aiosqlite pydantic>=2.0 pytest pytest-asyncio
+          pip install aiogram>=3.0 aiosqlite pydantic>=2.0 pytest pytest-asyncio python-dotenv
 
       - name: Execute Automated Tests
-        # Запуск pytest-asyncio тестов в изолированном окружении
-        run: pytest
-        
+        # Детерминированная сборка тестов в строгом асинхронном режиме с фиксацией путей
+        run: PYTHONPATH=. pytest -v
