@@ -1,13 +1,13 @@
 # tests/test_database.py
 import os
 import unittest
+
 import bot.database
+from bot.database import get_user_readings, init_db, save_reading
 
 # Переопределяем путь к БД до инициализации тестов, чтобы избежать затирания продакшена
 TEST_DB_PATH = "test_tarot.db"
 bot.database.DB_PATH = TEST_DB_PATH
-
-from bot.database import init_db, save_reading, get_user_readings
 
 
 class TestDatabaseAsync(unittest.IsolatedAsyncioTestCase):
