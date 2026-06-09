@@ -12,8 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    # Защитный сентинел: игнорируем триггер, если автором пуша является сам бот
-    # или в сообщении коммита уже есть маркер [skip ci]
+    
     if: github.actor != 'github-actions[bot]' && !contains(github.event.head_commit.message, '[skip ci]')
     
     steps:
@@ -21,6 +20,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          ref: ${{ github.ref_name }}
 
       - name: Set up Python 3.12
         uses: actions/setup-python@v5
@@ -31,11 +31,9 @@ jobs:
         run: pip install ruff
 
       - name: Execute Auto-Fix
-        # Исправление импортов, синтаксиса и приведение к современному Python
         run: ruff check --fix --select=E,F,I,UP .
 
       - name: Execute Formatting
-        # Приведение к line-length=100 (поддерживается только для format)
         run: ruff format --line-length=100 .
 
       - name: Commit and Push Corrected Code
