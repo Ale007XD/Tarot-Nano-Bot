@@ -1,6 +1,5 @@
-from pydantic import BaseModel, Field
-from typing import Dict
 import aiosqlite
+from pydantic import BaseModel, Field
 
 
 class RetentionMetrics(BaseModel):
@@ -8,7 +7,7 @@ class RetentionMetrics(BaseModel):
 
     total_users: int = Field(ge=0)
     conversion_rate: float = Field(ge=0.0, le=1.0)
-    state_distribution: Dict[str, int]
+    state_distribution: dict[str, int]
     anomaly_count: int = Field(default=0, ge=0)
 
 
@@ -34,9 +33,7 @@ class TraceAnalyzer:
             total_users = row[0] if row else 0
             total_readings = row[1] if row else 0
 
-        async with self.db.execute(
-            "SELECT COUNT(*) FROM readings WHERE paid = 1"
-        ) as cursor:
+        async with self.db.execute("SELECT COUNT(*) FROM readings WHERE paid = 1") as cursor:
             row = await cursor.fetchone()
             paid_readings = row[0] if row else 0
 

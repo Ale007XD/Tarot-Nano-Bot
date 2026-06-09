@@ -10,7 +10,7 @@ from bot.config import TELEGRAM_TOKEN
 from bot.database import init_db
 
 # Импортируем все хендлеры, включая admin и новый history слой
-from bot.handlers import start, tarot, payment, referral, admin, history
+from bot.handlers import admin, history, payment, referral, start, tarot
 
 
 async def main():

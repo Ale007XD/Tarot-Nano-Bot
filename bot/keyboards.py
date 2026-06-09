@@ -1,13 +1,11 @@
 # bot/keyboards.py
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 
 def start_kb():
     """Стартовая клавиатура — первая кнопка"""
     kb = InlineKeyboardMarkup(
-        inline_keyboard=[
-            [InlineKeyboardButton(text="🔮 Вытянуть мою карту", callback_data="draw")]
-        ]
+        inline_keyboard=[[InlineKeyboardButton(text="🔮 Вытянуть мою карту", callback_data="draw")]]
     )
     return kb
 

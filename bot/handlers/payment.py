@@ -1,8 +1,9 @@
-from aiogram import Router, F
-from aiogram.types import PreCheckoutQuery, Message
-from pydantic import BaseModel, Field
-import aiosqlite
 import logging
+
+import aiosqlite
+from aiogram import F, Router
+from aiogram.types import Message, PreCheckoutQuery
+from pydantic import BaseModel, Field
 
 router = Router(name="payment_router")
 
@@ -31,9 +32,7 @@ async def process_pre_checkout_query(pre_checkout_query: PreCheckoutQuery) -> No
         # Переход разрешен: схема данных консистентна
         await pre_checkout_query.answer(ok=True)
     except Exception as e:
-        logging.error(
-            f"[Payment Engine] PreCheckoutQuery schema drift/validation failure: {e}"
-        )
+        logging.error(f"[Payment Engine] PreCheckoutQuery schema drift/validation failure: {e}")
         await pre_checkout_query.answer(
             ok=False,
             error_message="Критическая ошибка валидации структуры платежа. Повторите запрос.",
@@ -41,9 +40,7 @@ async def process_pre_checkout_query(pre_checkout_query: PreCheckoutQuery) -> No
 
 
 @router.message(F.successful_payment)
-async def process_successful_payment(
-    message: Message, db: aiosqlite.Connection
-) -> None:
+async def process_successful_payment(message: Message, db: aiosqlite.Connection) -> None:
     """
     Хендлер успешной транзакции (SuccessfulPayment).
     Выполняет детерминированный переход конечного автомата:

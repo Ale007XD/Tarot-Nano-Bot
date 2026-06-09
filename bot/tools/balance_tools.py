@@ -6,6 +6,7 @@ from __future__ import annotations
 # Tool functions — sync, **kwargs required (nano-vm constraint)
 # ---------------------------------------------------------------------------
 
+
 def check_balance(free_spreads: int = 0, **kwargs: object) -> dict[str, object]:
     """Check if user has free spreads available.
 

@@ -93,9 +93,7 @@ async def test_give_spreads_command():
     # Валидация мутации состояния в СУБД
     async with aiosqlite.connect(TEST_DB_PATH) as db:
         db.row_factory = aiosqlite.Row
-        async with db.execute(
-            "SELECT free_spreads FROM users WHERE user_id = 777"
-        ) as cursor:
+        async with db.execute("SELECT free_spreads FROM users WHERE user_id = 777") as cursor:
             row = await cursor.fetchone()
 
     assert row is not None

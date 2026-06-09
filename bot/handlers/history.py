@@ -1,6 +1,7 @@
 # bot/handlers/history.py
 from aiogram import Router, types
 from aiogram.filters import Command
+
 from bot.database import get_user_readings
 
 router = Router()
@@ -31,9 +32,7 @@ async def cmd_history(message: types.Message):
         status_marker = "👑 [Paid State]" if is_paid else "🆓 [Free State]"
         # Обрезаем длинный вывод интерпретации для краткости отображения в листинге
         short_interpretation = (
-            interpretation[:120] + "..."
-            if len(interpretation) > 120
-            else interpretation
+            interpretation[:120] + "..." if len(interpretation) > 120 else interpretation
         )
 
         text += f"{idx}. *Расклад:* {spread_name} | {status_marker}\n"

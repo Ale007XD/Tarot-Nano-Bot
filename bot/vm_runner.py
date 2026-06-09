@@ -6,7 +6,8 @@ Handlers import run_card_of_day() / run_full_reading() / resume_full_reading().
 
 from __future__ import annotations
 
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 from nano_vm import ExecutionVM, WebhookEvent
 from nano_vm.adapters import LiteLLMAdapter

@@ -1,21 +1,22 @@
 import asyncio
 import os
 import sys
+
 import httpx
 
 # Добавляем корень проекта в путь поиска модулей
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from bot.config import (
-    TELEGRAM_TOKEN,
+    DB_PATH,
     OPENAI_API_KEY,
     OPENROUTER_API_KEY,
+    TELEGRAM_TOKEN,
     USE_OPENROUTER,
-    DB_PATH,
 )
 from bot.database import init_db
-from bot.services.tarot_engine import build_deck
 from bot.services.llm_service import generate_reading
+from bot.services.tarot_engine import build_deck
 
 
 def check_env():
@@ -56,9 +57,7 @@ async def check_llm():
     print("--- Проверка LLM ---")
     cards = "Past: The Fool, Present: The Tower, Future: The Star"
     result = await generate_reading(cards)
-    assert isinstance(result, str) and len(result) > 10, (
-        "LLM вернула пустой или некорректный ответ"
-    )
+    assert isinstance(result, str) and len(result) > 10, "LLM вернула пустой или некорректный ответ"
     print("LLM: OK")
 
 

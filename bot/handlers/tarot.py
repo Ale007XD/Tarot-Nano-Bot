@@ -61,7 +61,7 @@ class ProviderResponse(BaseModel):
 
 def calculate_deterministic_card(user_id: int, current_date: str, salt: str) -> int:
     """Математически строгое вычисление индекса состояния через SHA256."""
-    payload = f"{user_id}:{current_date}:{salt}".encode("utf-8")
+    payload = f"{user_id}:{current_date}:{salt}".encode()
     hash_hex = hashlib.sha256(payload).hexdigest()
     return int(hash_hex, 16) % 78
 

@@ -1,8 +1,8 @@
 """Административный контур управления и аналитики MVP."""
 
 import asyncio
-from datetime import datetime, timedelta
 import os
+from datetime import datetime, timedelta
 
 import aiosqlite
 from aiogram import Bot, F, Router
@@ -91,9 +91,7 @@ async def admin_stats(message: Message) -> None:
 async def download_db(message: Message) -> None:
     """Скачивание актуальной копии базы данных СУБД."""
     if os.path.exists(DB_PATH):
-        await message.answer_document(
-            FSInputFile(DB_PATH), caption="📦 Актуальная копия БД"
-        )
+        await message.answer_document(FSInputFile(DB_PATH), caption="📦 Актуальная копия БД")
     else:
         await message.answer("❌ Файл базы данных не найден.")
 
@@ -102,9 +100,7 @@ async def download_db(message: Message) -> None:
 async def download_logs(message: Message) -> None:
     """Скачивание логов работы бота."""
     if os.path.exists("bot.log"):
-        await message.answer_document(
-            FSInputFile("bot.log"), caption="📜 Логи работы бота"
-        )
+        await message.answer_document(FSInputFile("bot.log"), caption="📜 Логи работы бота")
     else:
         await message.answer("❌ Файл логов (bot.log) не найден.")
 

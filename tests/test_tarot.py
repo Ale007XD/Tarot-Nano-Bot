@@ -3,12 +3,12 @@
 import os
 from unittest.mock import AsyncMock
 
+import aiosqlite
 import pytest
 import pytest_asyncio
-import aiosqlite
 
 import bot.database
-from bot.handlers.tarot import calculate_deterministic_card, draw, ProviderResponse
+from bot.handlers.tarot import ProviderResponse, calculate_deterministic_card, draw
 
 TEST_TAROT_DB = "test_tarot_runtime.db"
 
@@ -82,9 +82,7 @@ async def test_draw_callback_handler_execution():
     # 1. Проверка записи снапшота в изолированную базу данных
     async with aiosqlite.connect(TEST_TAROT_DB) as db:
         db.row_factory = aiosqlite.Row
-        async with db.execute(
-            "SELECT * FROM readings WHERE user_id = 999888"
-        ) as cursor:
+        async with db.execute("SELECT * FROM readings WHERE user_id = 999888") as cursor:
             row = await cursor.fetchone()
 
     assert row is not None

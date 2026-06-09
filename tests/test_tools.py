@@ -2,27 +2,27 @@
 
 from __future__ import annotations
 
-import sys
 import os
+import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from bot.tools.tarot_tools import (
-    FULL_DECK,
-    draw_deterministic_card,
-    draw_three_card_spread,
-)
-from bot.tools.balance_tools import check_balance, charge_free_spread
+from bot.tools.balance_tools import charge_free_spread, check_balance
 from bot.tools.storage_tools import (
     build_card_of_day_save_params,
     build_full_reading_save_params,
     build_payment_required_params,
 )
-
+from bot.tools.tarot_tools import (
+    FULL_DECK,
+    draw_deterministic_card,
+    draw_three_card_spread,
+)
 
 # ---------------------------------------------------------------------------
 # tarot_tools
 # ---------------------------------------------------------------------------
+
 
 class TestFullDeck:
     def test_deck_size(self) -> None:
@@ -78,9 +78,7 @@ class TestDrawDeterministicCard:
         assert r1["card_index"] != r2["card_index"]
 
     def test_accepts_kwargs(self) -> None:
-        result = draw_deterministic_card(
-            user_id=1, execution_date="2026-01-01", extra_ignored="x"
-        )
+        result = draw_deterministic_card(user_id=1, execution_date="2026-01-01", extra_ignored="x")
         assert result["card_name"] in FULL_DECK
 
 
@@ -105,6 +103,7 @@ class TestDrawThreeCardSpread:
 # ---------------------------------------------------------------------------
 # balance_tools
 # ---------------------------------------------------------------------------
+
 
 class TestCheckBalance:
     def test_free_when_spreads_available(self) -> None:
@@ -140,11 +139,15 @@ class TestChargeFreeSpread:
 # storage_tools
 # ---------------------------------------------------------------------------
 
+
 class TestBuildCardOfDaySaveParams:
     def test_required_keys(self) -> None:
         result = build_card_of_day_save_params(
-            user_id=42, card_name="The Fool", card_index=0,
-            execution_date="2026-06-09", trace_id="abc-123",
+            user_id=42,
+            card_name="The Fool",
+            card_index=0,
+            execution_date="2026-06-09",
+            trace_id="abc-123",
         )
         assert result["user_id"] == 42
         assert result["spread"] == "card_of_the_day"
@@ -160,9 +163,11 @@ class TestBuildCardOfDaySaveParams:
 class TestBuildFullReadingSaveParams:
     def test_required_keys(self) -> None:
         result = build_full_reading_save_params(
-            user_id=42, cards_text="Past: The Fool\n...",
+            user_id=42,
+            cards_text="Past: The Fool\n...",
             interpretation="You stand at a threshold...",
-            paid=1, trace_id="def-456",
+            paid=1,
+            trace_id="def-456",
         )
         assert result["user_id"] == 42
         assert result["spread"] == "past_present_future"

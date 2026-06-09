@@ -1,13 +1,15 @@
+from datetime import datetime
+from unittest.mock import AsyncMock, patch
+
+import aiosqlite
 import pytest
 import pytest_asyncio
-import aiosqlite
-from datetime import datetime
-from unittest.mock import patch, AsyncMock
-from aiogram.types import PreCheckoutQuery, User, SuccessfulPayment, Message, Chat
+from aiogram.types import Chat, Message, PreCheckoutQuery, SuccessfulPayment, User
+
 from bot.handlers.payment import (
+    OrderPayload,
     process_pre_checkout_query,
     process_successful_payment,
-    OrderPayload,
 )
 
 
@@ -50,9 +52,7 @@ async def test_pre_checkout_query_validation_success():
     )
 
     # Патчинг метода на уровне класса для обхода Pydantic frozen_instance guardrail
-    with patch.object(
-        PreCheckoutQuery, "answer", new_callable=AsyncMock
-    ) as mock_answer:
+    with patch.object(PreCheckoutQuery, "answer", new_callable=AsyncMock) as mock_answer:
         await process_pre_checkout_query(query)
         mock_answer.assert_called_once_with(ok=True)
 
@@ -98,6 +98,4 @@ async def test_successful_payment_state_transition(mock_db):
     ) as cursor:
         row = await cursor.fetchone()
         assert row is not None
-        assert row[0] == 1, (
-            "Математический инвариант нарушен: состояние paid не перешло в 1"
-        )
+        assert row[0] == 1, "Математический инвариант нарушен: состояние paid не перешло в 1"

@@ -1,15 +1,14 @@
+import aiosqlite
 import pytest
 import pytest_asyncio
-import aiosqlite
+
 from bot.observatory.trace_analyzer import TraceAnalyzer
 
 
 @pytest_asyncio.fixture(scope="function")
 async def telemetry_db():
     async with aiosqlite.connect(":memory:") as db:
-        await db.execute(
-            "CREATE TABLE readings (id TEXT, user_id INTEGER, paid INTEGER)"
-        )
+        await db.execute("CREATE TABLE readings (id TEXT, user_id INTEGER, paid INTEGER)")
         # Генерируем тестовую трассу: 3 бесплатных перехода, 1 оплаченный
         test_data = [
             ("r1", 101, 0),
@@ -17,9 +16,7 @@ async def telemetry_db():
             ("r3", 102, 0),
             ("r4", 103, 0),
         ]
-        await db.executemany(
-            "INSERT INTO readings (id, user_id, paid) VALUES (?, ?, ?)", test_data
-        )
+        await db.executemany("INSERT INTO readings (id, user_id, paid) VALUES (?, ?, ?)", test_data)
         await db.commit()
         yield db
 

@@ -1,16 +1,14 @@
 # bot/database.py
 from __future__ import annotations
 
-import json
-
 import aiosqlite
 
 from bot.config import DB_PATH
 
-
 # ---------------------------------------------------------------------------
 # Schema init
 # ---------------------------------------------------------------------------
+
 
 async def init_db() -> None:
     async with aiosqlite.connect(DB_PATH) as db:
@@ -65,6 +63,7 @@ async def init_db() -> None:
 # Users
 # ---------------------------------------------------------------------------
 
+
 async def add_user(
     user_id: int,
     username: str | None,
@@ -90,8 +89,7 @@ async def get_user(user_id: int) -> tuple[int, str | None, int | None, int] | No
 async def decrement_free_spreads(user_id: int) -> None:
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute(
-            "UPDATE users SET free_spreads = free_spreads - 1 "
-            "WHERE user_id=? AND free_spreads > 0",
+            "UPDATE users SET free_spreads = free_spreads - 1 WHERE user_id=? AND free_spreads > 0",
             (user_id,),
         )
         await db.commit()
@@ -100,6 +98,7 @@ async def decrement_free_spreads(user_id: int) -> None:
 # ---------------------------------------------------------------------------
 # Referrals
 # ---------------------------------------------------------------------------
+
 
 async def add_referral(referrer_id: int, invited_id: int) -> None:
     async with aiosqlite.connect(DB_PATH) as db:
@@ -117,6 +116,7 @@ async def add_referral(referrer_id: int, invited_id: int) -> None:
 # ---------------------------------------------------------------------------
 # Readings
 # ---------------------------------------------------------------------------
+
 
 async def save_reading(
     user_id: int,
@@ -152,6 +152,7 @@ async def get_user_readings(user_id: int, limit: int = 10) -> list[tuple[object,
 # ---------------------------------------------------------------------------
 # Pending executions (suspend / resume bridge)
 # ---------------------------------------------------------------------------
+
 
 async def save_pending_execution(
     user_id: int,
@@ -189,7 +190,5 @@ async def get_pending_execution(
 
 async def delete_pending_execution(user_id: int) -> None:
     async with aiosqlite.connect(DB_PATH) as db:
-        await db.execute(
-            "DELETE FROM pending_executions WHERE user_id=?", (user_id,)
-        )
+        await db.execute("DELETE FROM pending_executions WHERE user_id=?", (user_id,))
         await db.commit()

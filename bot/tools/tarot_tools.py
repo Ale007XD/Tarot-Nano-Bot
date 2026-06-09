@@ -11,22 +11,49 @@ from datetime import date
 # ---------------------------------------------------------------------------
 
 MAJOR_ARCANA: list[str] = [
-    "The Fool", "The Magician", "The High Priestess", "The Empress",
-    "The Emperor", "The Hierophant", "The Lovers", "The Chariot",
-    "Strength", "The Hermit", "Wheel of Fortune", "Justice",
-    "The Hanged Man", "Death", "Temperance", "The Devil",
-    "The Tower", "The Star", "The Moon", "The Sun", "Judgement", "The World",
+    "The Fool",
+    "The Magician",
+    "The High Priestess",
+    "The Empress",
+    "The Emperor",
+    "The Hierophant",
+    "The Lovers",
+    "The Chariot",
+    "Strength",
+    "The Hermit",
+    "Wheel of Fortune",
+    "Justice",
+    "The Hanged Man",
+    "Death",
+    "Temperance",
+    "The Devil",
+    "The Tower",
+    "The Star",
+    "The Moon",
+    "The Sun",
+    "Judgement",
+    "The World",
 ]
 
 SUITS: list[str] = ["Wands", "Cups", "Swords", "Pentacles"]
 RANKS: list[str] = [
-    "Ace", "Two", "Three", "Four", "Five", "Six", "Seven",
-    "Eight", "Nine", "Ten", "Page", "Knight", "Queen", "King",
+    "Ace",
+    "Two",
+    "Three",
+    "Four",
+    "Five",
+    "Six",
+    "Seven",
+    "Eight",
+    "Nine",
+    "Ten",
+    "Page",
+    "Knight",
+    "Queen",
+    "King",
 ]
 
-FULL_DECK: list[str] = MAJOR_ARCANA + [
-    f"{rank} of {suit}" for suit in SUITS for rank in RANKS
-]
+FULL_DECK: list[str] = MAJOR_ARCANA + [f"{rank} of {suit}" for suit in SUITS for rank in RANKS]
 
 assert len(FULL_DECK) == 78  # noqa: S101
 
@@ -34,6 +61,7 @@ assert len(FULL_DECK) == 78  # noqa: S101
 # ---------------------------------------------------------------------------
 # Tool functions — sync, **kwargs required (nano-vm constraint)
 # ---------------------------------------------------------------------------
+
 
 def draw_deterministic_card(
     user_id: int,
@@ -46,7 +74,7 @@ def draw_deterministic_card(
     Returns same card for same user on same date — cryptographically provable.
     """
     today = execution_date or date.today().isoformat()
-    payload = f"{user_id}:{today}:{salt}".encode("utf-8")
+    payload = f"{user_id}:{today}:{salt}".encode()
     card_index = int(hashlib.sha256(payload).hexdigest(), 16) % 78
     card_name = FULL_DECK[card_index]
     return {
@@ -66,10 +94,7 @@ def draw_three_card_spread(**kwargs: object) -> dict[str, object]:
     random.shuffle(deck)
     drawn = deck[:3]
     reversed_flags = [random.choice([True, False]) for _ in range(3)]
-    cards = [
-        f"{card} (Reversed)" if rev else card
-        for card, rev in zip(drawn, reversed_flags)
-    ]
+    cards = [f"{card} (Reversed)" if rev else card for card, rev in zip(drawn, reversed_flags)]
     return {
         "past": cards[0],
         "present": cards[1],

@@ -4,11 +4,7 @@ from aiogram.types import LabeledPrice
 
 async def create_reading_invoice(bot, user_id: int):
     """Создаём счёт на 69 Telegram Stars (0% комиссии)"""
-    prices = [
-        LabeledPrice(
-            label="🔮 Полное чтение судьбы (3 карты + интерпретация)", amount=69
-        )
-    ]
+    prices = [LabeledPrice(label="🔮 Полное чтение судьбы (3 карты + интерпретация)", amount=69)]
 
     await bot.send_invoice(
         chat_id=user_id,

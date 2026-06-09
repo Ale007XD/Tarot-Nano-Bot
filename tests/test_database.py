@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import os
 import sys
-import tempfile
 
 import pytest
 
@@ -20,20 +19,20 @@ def tmp_db(tmp_path: object, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(config_module, "DB_PATH", db_file)
     # Also patch the DB_PATH that database.py imported at module load
     import bot.database as db_mod
+
     monkeypatch.setattr(db_mod, "DB_PATH", db_file)
 
 
 @pytest.mark.asyncio
 async def test_init_db_creates_tables() -> None:
-    from bot.database import init_db
-    import bot.database as db_mod
     import aiosqlite
+
+    import bot.database as db_mod
+    from bot.database import init_db
 
     await init_db()
     async with aiosqlite.connect(db_mod.DB_PATH) as db:
-        cursor = await db.execute(
-            "SELECT name FROM sqlite_master WHERE type='table'"
-        )
+        cursor = await db.execute("SELECT name FROM sqlite_master WHERE type='table'")
         tables = {row[0] for row in await cursor.fetchall()}
     assert "users" in tables
     assert "readings" in tables
@@ -43,7 +42,8 @@ async def test_init_db_creates_tables() -> None:
 
 @pytest.mark.asyncio
 async def test_add_and_get_user() -> None:
-    from bot.database import init_db, add_user, get_user
+    from bot.database import add_user, get_user, init_db
+
     await init_db()
     await add_user(123, "alice")
     row = await get_user(123)
@@ -53,7 +53,8 @@ async def test_add_and_get_user() -> None:
 
 @pytest.mark.asyncio
 async def test_add_user_idempotent() -> None:
-    from bot.database import init_db, add_user, get_user
+    from bot.database import add_user, get_user, init_db
+
     await init_db()
     await add_user(42, "bob")
     await add_user(42, "bob")  # second call must not raise
@@ -63,14 +64,16 @@ async def test_add_user_idempotent() -> None:
 
 @pytest.mark.asyncio
 async def test_get_user_none_for_unknown() -> None:
-    from bot.database import init_db, get_user
+    from bot.database import get_user, init_db
+
     await init_db()
     assert await get_user(999999) is None
 
 
 @pytest.mark.asyncio
 async def test_decrement_free_spreads() -> None:
-    from bot.database import init_db, add_user, get_user, decrement_free_spreads
+    from bot.database import add_user, decrement_free_spreads, get_user, init_db
+
     await init_db()
     await add_user(10, "carol")
     await decrement_free_spreads(10)
@@ -81,7 +84,8 @@ async def test_decrement_free_spreads() -> None:
 
 @pytest.mark.asyncio
 async def test_decrement_free_spreads_no_underflow() -> None:
-    from bot.database import init_db, add_user, get_user, decrement_free_spreads
+    from bot.database import add_user, decrement_free_spreads, get_user, init_db
+
     await init_db()
     await add_user(11, "dave")
     await decrement_free_spreads(11)  # 1 → 0
@@ -93,7 +97,8 @@ async def test_decrement_free_spreads_no_underflow() -> None:
 
 @pytest.mark.asyncio
 async def test_add_referral_increments_spreads() -> None:
-    from bot.database import init_db, add_user, get_user, add_referral
+    from bot.database import add_referral, add_user, get_user, init_db
+
     await init_db()
     await add_user(20, "eve")
     await add_user(21, "frank")
@@ -105,13 +110,18 @@ async def test_add_referral_increments_spreads() -> None:
 
 @pytest.mark.asyncio
 async def test_save_and_get_reading() -> None:
-    from bot.database import init_db, add_user, save_reading, get_user_readings
+    from bot.database import add_user, get_user_readings, init_db, save_reading
+
     await init_db()
     await add_user(30, "grace")
     await save_reading(
-        user_id=30, spread="card_of_the_day", cards="The Fool",
-        interpretation="You stand at a threshold.", paid=0,
-        execution_id="exec-abc", trace_hash="hash-xyz",
+        user_id=30,
+        spread="card_of_the_day",
+        cards="The Fool",
+        interpretation="You stand at a threshold.",
+        paid=0,
+        execution_id="exec-abc",
+        trace_hash="hash-xyz",
     )
     rows = await get_user_readings(30)
     assert len(rows) == 1
@@ -123,7 +133,8 @@ async def test_save_and_get_reading() -> None:
 
 @pytest.mark.asyncio
 async def test_get_user_readings_empty() -> None:
-    from bot.database import init_db, get_user_readings
+    from bot.database import get_user_readings, init_db
+
     await init_db()
     assert await get_user_readings(99999) == []
 
@@ -131,9 +142,11 @@ async def test_get_user_readings_empty() -> None:
 @pytest.mark.asyncio
 async def test_save_and_get_pending_execution() -> None:
     from bot.database import (
-        init_db, save_pending_execution,
-        get_pending_execution, delete_pending_execution,
+        get_pending_execution,
+        init_db,
+        save_pending_execution,
     )
+
     await init_db()
     await save_pending_execution(50, "exec-001", '{"trace": "data"}')
     result = await get_pending_execution(50)
@@ -146,8 +159,11 @@ async def test_save_and_get_pending_execution() -> None:
 @pytest.mark.asyncio
 async def test_pending_execution_upsert() -> None:
     from bot.database import (
-        init_db, save_pending_execution, get_pending_execution,
+        get_pending_execution,
+        init_db,
+        save_pending_execution,
     )
+
     await init_db()
     await save_pending_execution(51, "exec-001", '{"v": 1}')
     await save_pending_execution(51, "exec-002", '{"v": 2}')  # upsert
@@ -159,9 +175,12 @@ async def test_pending_execution_upsert() -> None:
 @pytest.mark.asyncio
 async def test_delete_pending_execution() -> None:
     from bot.database import (
-        init_db, save_pending_execution,
-        get_pending_execution, delete_pending_execution,
+        delete_pending_execution,
+        get_pending_execution,
+        init_db,
+        save_pending_execution,
     )
+
     await init_db()
     await save_pending_execution(52, "exec-001", "{}")
     await delete_pending_execution(52)
@@ -170,6 +189,7 @@ async def test_delete_pending_execution() -> None:
 
 @pytest.mark.asyncio
 async def test_get_pending_execution_none_for_unknown() -> None:
-    from bot.database import init_db, get_pending_execution
+    from bot.database import get_pending_execution, init_db
+
     await init_db()
     assert await get_pending_execution(999) is None

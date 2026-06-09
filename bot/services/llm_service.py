@@ -1,6 +1,8 @@
 # bot/services/llm_service.py
-import httpx
 import json
+
+import httpx
+
 from bot.config import OPENAI_API_KEY, OPENROUTER_API_KEY, USE_OPENROUTER
 
 
@@ -44,15 +46,11 @@ Explain past, present and future in 2-3 beautiful paragraphs.
             if r.status_code != 200 or "choices" not in data:
                 error_msg = data.get("error", {}).get("message", str(data))
                 print(f"❌ LLM ERROR {r.status_code}: {error_msg}")
-                print(
-                    f"Full response: {json.dumps(data, ensure_ascii=False, indent=2)}"
-                )
+                print(f"Full response: {json.dumps(data, ensure_ascii=False, indent=2)}")
                 return "🔮 Оракул сейчас в медитации... Попробуйте чуть позже или проверьте API-ключ в .env"
 
             return data["choices"][0]["message"]["content"]
 
     except Exception as e:
         print(f"🚨 LLM Exception: {type(e).__name__}: {e}")
-        return (
-            "🔮 Судьба шепчет... (временная техническая пауза, попробуйте через минуту)"
-        )
+        return "🔮 Судьба шепчет... (временная техническая пауза, попробуйте через минуту)"
