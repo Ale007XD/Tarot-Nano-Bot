@@ -101,3 +101,17 @@ async def save_reading(user_id: int, spread: str, cards: str, interpretation: st
             (user_id, spread, cards, interpretation, paid)
         )
         await db.commit()
+
+
+# ====================== SPRINT-0: HISTORY LAYER ======================
+
+async def get_user_readings(user_id: int, limit: int = 10) -> list[tuple]:
+    """Получение истории состояний раскладов пользователя для Reflection Engine"""
+    async with aiosqlite.connect(DB_PATH) as db:
+        cursor = await db.execute(
+            "SELECT id, user_id, spread, cards, interpretation, paid FROM readings "
+            "WHERE user_id = ? ORDER BY id DESC LIMIT ?",
+            (user_id, limit)
+        )
+        return await cursor.fetchall()
+        
