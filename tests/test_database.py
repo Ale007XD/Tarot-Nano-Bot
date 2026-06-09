@@ -11,7 +11,6 @@ bot.database.DB_PATH = TEST_DB_PATH
 
 
 class TestDatabaseAsync(unittest.IsolatedAsyncioTestCase):
-
     async def asyncSetUp(self):
         """Инициализация изолированной тестовой схемы перед каждым тестом"""
         # На всякий случай зачищаем старый файл, если он остался после сбоя
@@ -27,31 +26,31 @@ class TestDatabaseAsync(unittest.IsolatedAsyncioTestCase):
     async def test_history_layer_contract(self):
         """Тестирование сохранения состояний и получения хронологического таймлайна"""
         user_id = 77777
-        
+
         # 1. Записываем первое (историческое) состояние (Free)
         await save_reading(
             user_id=user_id,
             spread="Колода Дня",
             cards="Шут",
             interpretation="Начало нового цикла рантайма.",
-            paid=0
+            paid=0,
         )
-        
+
         # 2. Записываем второе (более свежее) состояние (Paid)
         await save_reading(
             user_id=user_id,
             spread="Крест Расклад",
             cards="Башня, Смерть",
             interpretation="Глубокая реструктуризация кода ядра.",
-            paid=1
+            paid=1,
         )
 
         # 3. Извлекаем историю с лимитом
         history = await get_user_readings(user_id=user_id, limit=10)
-        
+
         # Проверяем размерность возвращаемого массива состояний
         self.assertEqual(len(history), 2)
-        
+
         # Проверяем детерминизм сортировки (ORDER BY id DESC) — последнее состояние идет первым
         latest_reading = history[0]
         # Структура: (id, user_id, spread, cards, interpretation, paid)
@@ -64,6 +63,5 @@ class TestDatabaseAsync(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(first_reading[5], 0)  # paid = False
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
-    

@@ -16,6 +16,5 @@ def run():
     assert len(spread) == 3
 
     for pos, card in spread:
-
         assert isinstance(pos, str)
         assert isinstance(card, str)

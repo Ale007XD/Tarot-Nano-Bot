@@ -14,9 +14,7 @@ def run():
     passed = 0
 
     for test in TESTS:
-
         try:
-
             module = importlib.import_module(test)
 
             module.run()
@@ -26,7 +24,6 @@ def run():
             passed += 1
 
         except Exception:
-
             print(f"❌ {test}")
 
             traceback.print_exc()
@@ -35,10 +32,8 @@ def run():
     print(f"RESULT: {passed}/{len(TESTS)} tests passed")
 
     if passed != len(TESTS):
-
         raise SystemExit(1)
 
 
 if __name__ == "__main__":
-
     run()
