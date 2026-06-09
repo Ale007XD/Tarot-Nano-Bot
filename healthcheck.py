@@ -6,10 +6,17 @@ import httpx
 # Добавляем корень проекта в путь поиска модулей
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from bot.config import TELEGRAM_TOKEN, OPENAI_API_KEY, OPENROUTER_API_KEY, USE_OPENROUTER, DB_PATH
+from bot.config import (
+    TELEGRAM_TOKEN,
+    OPENAI_API_KEY,
+    OPENROUTER_API_KEY,
+    USE_OPENROUTER,
+    DB_PATH,
+)
 from bot.database import init_db
 from bot.services.tarot_engine import build_deck
 from bot.services.llm_service import generate_reading
+
 
 def check_env():
     print("--- Проверка конфигурации ---")
@@ -20,6 +27,7 @@ def check_env():
         assert OPENAI_API_KEY, "OPENAI_API_KEY отсутствует"
     print("ENV: OK")
 
+
 async def check_telegram():
     print("--- Проверка связи с Telegram ---")
     url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/getMe"
@@ -29,11 +37,13 @@ async def check_telegram():
         assert data.get("ok"), f"Ошибка API Telegram: {data.get('description')}"
         print(f"Telegram: OK (@{data['result']['username']})")
 
+
 async def check_database():
     print("--- Проверка базы данных ---")
     await init_db()
     assert os.path.exists(DB_PATH), f"Файл БД {DB_PATH} не найден"
     print("Database: OK")
+
 
 def check_tarot():
     print("--- Проверка колоды ---")
@@ -41,12 +51,16 @@ def check_tarot():
     assert len(deck) == 78, f"Ошибка: в колоде {len(deck)} карт, ожидалось 78"
     print("Tarot deck: OK")
 
+
 async def check_llm():
     print("--- Проверка LLM ---")
     cards = "Past: The Fool, Present: The Tower, Future: The Star"
     result = await generate_reading(cards)
-    assert isinstance(result, str) and len(result) > 10, "LLM вернула пустой или некорректный ответ"
+    assert isinstance(result, str) and len(result) > 10, (
+        "LLM вернула пустой или некорректный ответ"
+    )
     print("LLM: OK")
+
 
 async def main():
     print("\n🔮 TAROT BOT HEALTHCHECK STARTING\n")
@@ -57,10 +71,10 @@ async def main():
     await check_llm()
     print("\n✅ ВСЕ СИСТЕМЫ В НОРМЕ\n")
 
+
 if __name__ == "__main__":
     try:
         asyncio.run(main())
     except Exception as e:
         print(f"\n❌ HEALTHCHECK FAILED: {e}")
         sys.exit(1)
-
