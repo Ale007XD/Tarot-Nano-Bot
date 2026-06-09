@@ -12,9 +12,11 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    
-    if: github.actor != 'github-actions[bot]' && !contains(github.event.head_commit.message, '[skip ci]')
-    
+
+    if: >
+      github.actor != 'github-actions[bot]' &&
+      !contains(github.event.head_commit.message, '[skip ci]')
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -30,16 +32,18 @@ jobs:
       - name: Install Ruff
         run: pip install ruff
 
-      - name: Execute Auto-Fix
-        run: ruff check --fix --select=E,F,I,UP .
+      # Fix imports, unused vars, upgrades — config from pyproject.toml
+      - name: Fix lint issues
+        run: ruff check --fix .
 
-      - name: Execute Formatting
-        run: ruff format --line-length=100 .
+      # Format to line-length=100 — config from pyproject.toml
+      - name: Format code
+        run: ruff format .
 
       - name: Commit and Push Corrected Code
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "style: автоматическое исправление ruff (E,F,I,UP) [skip ci]"
+          commit_message: "style: ruff autofix [skip ci]"
           commit_user_name: "github-actions[bot]"
           commit_user_email: "github-actions[bot]@users.noreply.github.com"
           file_pattern: '*.py'
