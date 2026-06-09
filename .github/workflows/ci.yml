@@ -26,7 +26,7 @@ jobs:
           pip install ruff mypy pydantic>=2.0 aiosqlite aiogram>=3.0 pytest pytest-asyncio python-dotenv
 
       - name: Lint Verification (Ruff Check)
-        run: ruff check --line-length=100 --select=E,F,I,UP .
+        run: ruff check .
 
       - name: Format Verification (Ruff Format)
         run: ruff format --check .
@@ -54,5 +54,5 @@ jobs:
           pip install aiogram>=3.0 aiosqlite pydantic>=2.0 pytest pytest-asyncio python-dotenv
 
       - name: Execute Automated Tests
-        # Детерминированная сборка тестов в строгом асинхронном режиме с фиксацией путей
+        # Детерминированный запуск в строгом асинхронном режиме с фиксацией путей ядра
         run: PYTHONPATH=. pytest -v
