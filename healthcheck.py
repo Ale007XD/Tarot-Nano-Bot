@@ -7,8 +7,6 @@ import httpx
 # Добавляем корень проекта в путь поиска модулей
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from bot.services.tarot_engine import build_deck
-
 from bot.config import (
     DB_PATH,
     OPENAI_API_KEY,
@@ -18,6 +16,7 @@ from bot.config import (
 )
 from bot.database import init_db
 from bot.services.llm_service import generate_reading
+from bot.services.tarot_engine import build_deck
 
 
 def check_env():
