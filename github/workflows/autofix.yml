@@ -1,0 +1,41 @@
+name: Automated Code Style Autofix
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '**.py'
+
+jobs:
+  ruff-autofix:
+    name: Ruff Auto-repair Execution
+    runs-on: ubuntu-latest
+    # Защитный сентинел: игнорируем триггер, если автором пуша является сам бот
+    if: github.actor != 'github-actions[bot]'
+    steps:
+      - name: Checkout Repository with Write Permissions
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Linting Tools
+        run: pip install ruff
+
+      - name: Execute Auto-Fix and Formatting
+        # Исправление импортов, синтаксиса и приведение к line-length=100
+        run: |
+          ruff check --fix --line-length=100 --select=E,F,I,UP .
+          ruff format --line-length=100 .
+
+      - name: Commit and Push Corrected Code
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "style: автоматическое исправление ruff (E,F,I,UP) [skip ci]"
+          commit_user_name: "github-actions[bot]"
+          commit_user_email: "github-actions[bot]@users.noreply.github.com"
+          
