@@ -1,26 +1,26 @@
+# bot/config.py
+from __future__ import annotations
+
 import os
 from dotenv import load_dotenv
 
-# Загружаем переменные из .env файла
 load_dotenv()
 
-# Основные токены
-TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
+# Telegram
+TELEGRAM_TOKEN: str = os.getenv("TELEGRAM_TOKEN", "")
+ADMIN_ID: int = int(os.getenv("ADMIN_ID", "0"))
 
-# ID администратора для доступа к админ-панели
-# Если переменная не задана в .env, устанавливаем 0, чтобы админ-функции не сработали
-ADMIN_ID = int(os.getenv("ADMIN_ID", 0))
+# LLM — LiteLLM model string (OpenRouter or any LiteLLM-compatible provider)
+# Example: "openrouter/mistralai/mistral-7b-instruct"
+LLM_MODEL: str = os.getenv("LLM_MODEL", "openrouter/mistralai/mistral-7b-instruct")
 
-# Ключи для LLM
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+# Tarot determinism salt — change to rotate card assignments across all users
+TAROT_SALT: str = os.getenv("TAROT_SALT", "TAROT_GOVERNANCE_SALT_2026")
 
-# Настройки LLM
-USE_OPENROUTER = os.getenv("USE_OPENROUTER", "true").lower() == "true"
+# DB
+DB_PATH: str = os.getenv("DB_PATH", "tarot.db")
 
-# Путь к БД
-DB_PATH = "tarot.db"
-
-# Валидация критических переменных (опционально, но полезно для отладки)
-if not TELEGRAM_TOKEN:
-    raise ValueError("❌ Ошибка: TELEGRAM_TOKEN не найден в .env файле!")
+# Validation — skip when running under pytest
+import sys as _sys
+if not TELEGRAM_TOKEN and "pytest" not in _sys.modules:
+    raise ValueError("TELEGRAM_TOKEN not found in .env")
