@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from unittest.mock import AsyncMock, patch
 
 import pytest
@@ -11,18 +12,19 @@ from bot.handlers.payment import OrderPayload, process_pre_checkout_query
 
 
 def test_order_payload_valid() -> None:
-    p = OrderPayload(user_id=1, reading_id="r1", amount=69)
+    p = OrderPayload(user_id=1, execution_id="tid-001", amount=69)
     assert p.user_id == 1
+    assert p.execution_id == "tid-001"
     assert p.amount == 69
 
 
 def test_order_payload_invalid_amount() -> None:
     with pytest.raises(ValueError):
-        OrderPayload(user_id=1, reading_id="r1", amount=0)
+        OrderPayload(user_id=1, execution_id="tid-001", amount=0)
 
 
 async def test_pre_checkout_query_valid_payload() -> None:
-    payload = OrderPayload(user_id=12345, reading_id="r1", amount=69)
+    payload = OrderPayload(user_id=12345, execution_id="tid-001", amount=69)
     query = PreCheckoutQuery(
         id="qid",
         from_user=User(id=12345, is_bot=False, first_name="T"),
@@ -47,3 +49,4 @@ async def test_pre_checkout_query_invalid_payload() -> None:
         await process_pre_checkout_query(query)
         call_kwargs = mock_ans.call_args[1]
         assert call_kwargs["ok"] is False
+        
