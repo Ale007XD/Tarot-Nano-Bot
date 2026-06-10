@@ -41,6 +41,7 @@ async def setup_tarot_db() -> object:
 # draw_deterministic_card unit tests (replaces ProviderResponse / calculate_*)
 # ---------------------------------------------------------------------------
 
+
 def test_deterministic_card_same_input() -> None:
     r1 = draw_deterministic_card(123456789, "2026-06-09", SALT)
     r2 = draw_deterministic_card(123456789, "2026-06-09", SALT)
@@ -75,6 +76,7 @@ def test_deterministic_card_invalid_id_out_of_range() -> None:
 # ---------------------------------------------------------------------------
 # draw callback tests (via mock vm_runner)
 # ---------------------------------------------------------------------------
+
 
 def _make_successful_trace(card_name: str = "The Star") -> MagicMock:
     step = MagicMock()
@@ -138,4 +140,3 @@ async def test_draw_callback_sends_message() -> None:
     text = callback.message.answer.call_args[0][0]
     assert "🔮" in text
     assert "карту дня" in text
-    
