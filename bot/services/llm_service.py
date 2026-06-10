@@ -49,7 +49,7 @@ Explain past, present and future in 2-3 beautiful paragraphs.
                 print(f"Full response: {json.dumps(data, ensure_ascii=False, indent=2)}")
                 return "🔮 Оракул сейчас в медитации... Попробуйте чуть позже или проверьте API-ключ в .env"
 
-            return data["choices"][0]["message"]["content"]
+            return str(data["choices"][0]["message"]["content"])
 
     except Exception as e:
         print(f"🚨 LLM Exception: {type(e).__name__}: {e}")
