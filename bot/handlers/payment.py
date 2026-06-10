@@ -121,10 +121,7 @@ async def process_successful_payment(message: Message) -> None:
         trace_hash=trace_hash,
     )
 
-    msg = (
-        f"🔮 **Оплата подтверждена! Полный расклад**\n\n"
-        f"{cards_text}\n\n{interpretation}"
-    )
+    msg = f"🔮 **Оплата подтверждена! Полный расклад**\n\n{cards_text}\n\n{interpretation}"
     if len(msg) > 4000:
         await message.answer(msg[:4000])
         await message.answer(msg[4000:], reply_markup=share_kb())
