@@ -3,8 +3,6 @@ name: Automated Code Style Autofix
 on:
   push:
     branches: [main]
-    paths:
-      - '**.py'
 
 jobs:
   ruff-autofix:
@@ -32,11 +30,9 @@ jobs:
       - name: Install Ruff
         run: pip install ruff
 
-      # Fix imports, unused vars, upgrades — config from pyproject.toml
       - name: Fix lint issues
         run: ruff check --fix .
 
-      # Format to line-length=100 — config from pyproject.toml
       - name: Format code
         run: ruff format .
 
@@ -46,4 +42,4 @@ jobs:
           commit_message: "style: ruff autofix [skip ci]"
           commit_user_name: "github-actions[bot]"
           commit_user_email: "github-actions[bot]@users.noreply.github.com"
-          file_pattern: '*.py'
+          file_pattern: '*.py **/*.py'
