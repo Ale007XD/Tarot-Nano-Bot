@@ -25,3 +25,8 @@ DB_PATH: str = os.getenv("DB_PATH", "tarot.db")
 # Validation — skip when running under pytest
 if not TELEGRAM_TOKEN and "pytest" not in sys.modules:
     raise ValueError("TELEGRAM_TOKEN not found in .env")
+
+# Legacy LLM config (used by bot/services/llm_service.py)
+OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
+OPENROUTER_API_KEY: str = os.getenv("OPENROUTER_API_KEY", "")
+USE_OPENROUTER: bool = os.getenv("USE_OPENROUTER", "true").lower() == "true"

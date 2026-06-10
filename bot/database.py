@@ -3,6 +3,20 @@ from __future__ import annotations
 
 import aiosqlite
 
+__all__ = [
+    "DB_PATH",
+    "init_db",
+    "add_user",
+    "get_user",
+    "decrement_free_spreads",
+    "add_referral",
+    "save_reading",
+    "get_user_readings",
+    "save_pending_execution",
+    "get_pending_execution",
+    "delete_pending_execution",
+]
+
 from bot.config import DB_PATH
 
 # ---------------------------------------------------------------------------
