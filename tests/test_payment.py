@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 from unittest.mock import AsyncMock, patch
 
 import pytest
@@ -49,4 +48,3 @@ async def test_pre_checkout_query_invalid_payload() -> None:
         await process_pre_checkout_query(query)
         call_kwargs = mock_ans.call_args[1]
         assert call_kwargs["ok"] is False
-        
