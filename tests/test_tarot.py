@@ -3,16 +3,15 @@
 from __future__ import annotations
 
 import os
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import aiosqlite
 import pytest
 
 import bot.database
-from bot.handlers.tarot import ProviderResponse, calculate_deterministic_card, draw
+from bot.tools.tarot_tools import FULL_DECK, draw_deterministic_card
 
 TEST_TAROT_DB = "test_tarot_runtime.db"
-
 SALT = "NANO_VM_CRYPTO_DETERMINISTIC_SECURE_SALT_2026"
 
 
@@ -38,41 +37,74 @@ async def setup_tarot_db() -> object:
     bot.database.DB_PATH = old
 
 
+# ---------------------------------------------------------------------------
+# draw_deterministic_card unit tests (replaces ProviderResponse / calculate_*)
+# ---------------------------------------------------------------------------
+
 def test_deterministic_card_same_input() -> None:
-    c1 = calculate_deterministic_card(123456789, "2026-06-09", SALT)
-    c2 = calculate_deterministic_card(123456789, "2026-06-09", SALT)
-    assert c1 == c2
-    assert 0 <= c1 < 78
+    r1 = draw_deterministic_card(123456789, "2026-06-09", SALT)
+    r2 = draw_deterministic_card(123456789, "2026-06-09", SALT)
+    assert r1["card_index"] == r2["card_index"]
+    assert 0 <= int(r1["card_index"]) < 78
 
 
 def test_deterministic_card_different_users() -> None:
-    c1 = calculate_deterministic_card(1, "2026-06-09", SALT)
-    c2 = calculate_deterministic_card(2, "2026-06-09", SALT)
-    assert c1 != c2
+    r1 = draw_deterministic_card(1, "2026-06-09", SALT)
+    r2 = draw_deterministic_card(2, "2026-06-09", SALT)
+    assert r1["card_index"] != r2["card_index"]
 
 
 def test_deterministic_card_different_dates() -> None:
-    c1 = calculate_deterministic_card(42, "2026-06-09", SALT)
-    c2 = calculate_deterministic_card(42, "2026-06-10", SALT)
-    assert c1 != c2
+    r1 = draw_deterministic_card(42, "2026-06-09", SALT)
+    r2 = draw_deterministic_card(42, "2026-06-10", SALT)
+    assert r1["card_index"] != r2["card_index"]
 
 
-def test_provider_response_invalid_card_id() -> None:
-    with pytest.raises(ValueError):
-        ProviderResponse(
-            card_id=99,
-            card_name="Invalid",
-            interpretation="Error",
-            execution_date="2026-06-09",
-        )
+def test_deterministic_card_name_in_deck() -> None:
+    result = draw_deterministic_card(42, "2026-06-09", SALT)
+    assert result["card_name"] in FULL_DECK
+
+
+def test_deterministic_card_invalid_id_out_of_range() -> None:
+    # card_index must always be 0..77 — SHA-256 % 78 guarantee
+    for uid in range(100):
+        r = draw_deterministic_card(uid, "2026-06-09", SALT)
+        assert 0 <= int(r["card_index"]) < 78
+
+
+# ---------------------------------------------------------------------------
+# draw callback tests (via mock vm_runner)
+# ---------------------------------------------------------------------------
+
+def _make_successful_trace(card_name: str = "The Star") -> MagicMock:
+    step = MagicMock()
+    step.output = {"card_name": card_name, "interpretation": "Надежда и свет"}
+    trace = MagicMock()
+    status = MagicMock()
+    status.__str__ = lambda s: "SUCCESS"
+    trace.status = status
+    trace.trace_id = "tid-draw-001"
+    trace.steps = [step]
+    trace.model_dump_json = MagicMock(return_value='{"trace_id":"tid-draw-001"}')
+    return trace
 
 
 async def test_draw_callback_saves_reading() -> None:
-    callback = AsyncMock()
-    callback.from_user.id = 999888
-    callback.message = AsyncMock()
+    trace = _make_successful_trace("The Star")
 
-    await draw(callback)
+    with (
+        patch("bot.handlers.tarot.run_card_of_day", new=AsyncMock(return_value=trace)),
+        patch("bot.handlers.tarot.get_trace_hash", return_value="hash-test"),
+        patch("bot.handlers.tarot.LLM_MODEL", "test-model"),
+        patch("bot.handlers.tarot.TAROT_SALT", SALT),
+    ):
+        from bot.handlers.tarot import draw
+
+        callback = AsyncMock()
+        callback.from_user = MagicMock(id=999888)
+        callback.message = AsyncMock()
+        callback.answer = AsyncMock()
+        await draw(callback)
 
     async with aiosqlite.connect(TEST_TAROT_DB) as db:
         db.row_factory = aiosqlite.Row
@@ -86,13 +118,24 @@ async def test_draw_callback_saves_reading() -> None:
 
 
 async def test_draw_callback_sends_message() -> None:
-    callback = AsyncMock()
-    callback.from_user.id = 111222
-    callback.message = AsyncMock()
+    trace = _make_successful_trace("The Moon")
 
-    await draw(callback)
+    with (
+        patch("bot.handlers.tarot.run_card_of_day", new=AsyncMock(return_value=trace)),
+        patch("bot.handlers.tarot.get_trace_hash", return_value=None),
+        patch("bot.handlers.tarot.LLM_MODEL", "test-model"),
+        patch("bot.handlers.tarot.TAROT_SALT", SALT),
+    ):
+        from bot.handlers.tarot import draw
+
+        callback = AsyncMock()
+        callback.from_user = MagicMock(id=111222)
+        callback.message = AsyncMock()
+        callback.answer = AsyncMock()
+        await draw(callback)
 
     callback.message.answer.assert_called_once()
     text = callback.message.answer.call_args[0][0]
     assert "🔮" in text
     assert "карту дня" in text
+    
