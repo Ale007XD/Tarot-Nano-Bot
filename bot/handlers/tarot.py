@@ -25,28 +25,11 @@ router = Router()
 partial_cards: dict[int, str] = {}
 
 TAROT_POOL: list[str] = [
-    "The Fool",
-    "The Magician",
-    "The High Priestess",
-    "The Empress",
-    "The Emperor",
-    "The Hierophant",
-    "The Lovers",
-    "The Chariot",
-    "Strength",
-    "The Hermit",
-    "Wheel of Fortune",
-    "Justice",
-    "The Hanged Man",
-    "Death",
-    "Temperance",
-    "The Devil",
-    "The Tower",
-    "The Star",
-    "The Moon",
-    "The Sun",
-    "Judgement",
-    "The World",
+    "The Fool", "The Magician", "The High Priestess", "The Empress",
+    "The Emperor", "The Hierophant", "The Lovers", "The Chariot",
+    "Strength", "The Hermit", "Wheel of Fortune", "Justice",
+    "The Hanged Man", "Death", "Temperance", "The Devil",
+    "The Tower", "The Star", "The Moon", "The Sun", "Judgement", "The World",
 ] + [f"Minor Arcana Card #{i}" for i in range(22, 78)]
 
 
