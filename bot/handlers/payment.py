@@ -6,14 +6,17 @@ import logging
 
 from aiogram import F, Router
 from aiogram.types import Message, PreCheckoutQuery
+from nano_vm.models import Trace
 from pydantic import BaseModel, Field
 
+from bot.config import LLM_MODEL
 from bot.database import (
     delete_pending_execution,
     get_pending_execution,
     save_reading,
 )
 from bot.keyboards import share_kb
+from bot.vm_runner import get_trace_hash, resume_full_reading
 
 router = Router(name="payment_router")
 
@@ -52,7 +55,6 @@ async def process_successful_payment(message: Message) -> None:
         await message.answer("🚨 Ошибка разбора платежа. Обратитесь в поддержку.")
         return
 
-    # Load pending trace
     pending = await get_pending_execution(user_id)
     if pending is None:
         logging.warning(f"[Payment] No pending execution for user={user_id}")
@@ -63,19 +65,10 @@ async def process_successful_payment(message: Message) -> None:
 
     execution_id_db, trace_json = pending
 
-    # Verify execution_id matches
     if execution_id_db != payload.execution_id:
         logging.warning(
             f"[Payment] execution_id mismatch: db={execution_id_db} payload={payload.execution_id}"
         )
-        # Accept the newer one from payload — payload is authoritative (signed by Stars)
-        # but log the anomaly
-
-    # Deserialise trace and resume
-    from nano_vm.models import Trace
-
-    from bot.config import LLM_MODEL  # local import
-    from bot.vm_runner import get_trace_hash, resume_full_reading
 
     try:
         trace = Trace.model_validate_json(trace_json)
@@ -92,7 +85,6 @@ async def process_successful_payment(message: Message) -> None:
         )
         return
     finally:
-        # Always clean up pending regardless of resume outcome
         await delete_pending_execution(user_id)
 
     status = str(getattr(resumed, "status", "")).upper()
@@ -103,7 +95,6 @@ async def process_successful_payment(message: Message) -> None:
         )
         return
 
-    # Extract result from resumed trace
     cards_text = ""
     interpretation = ""
     try:
@@ -130,7 +121,10 @@ async def process_successful_payment(message: Message) -> None:
         trace_hash=trace_hash,
     )
 
-    msg = f"🔮 **Оплата подтверждена! Полный расклад**\n\n{cards_text}\n\n{interpretation}"
+    msg = (
+        f"🔮 **Оплата подтверждена! Полный расклад**\n\n"
+        f"{cards_text}\n\n{interpretation}"
+    )
     if len(msg) > 4000:
         await message.answer(msg[:4000])
         await message.answer(msg[4000:], reply_markup=share_kb())
