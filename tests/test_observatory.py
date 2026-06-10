@@ -11,9 +11,7 @@ from bot.observatory.trace_analyzer import TraceAnalyzer
 @pytest.fixture
 async def telemetry_db() -> object:
     async with aiosqlite.connect(":memory:") as db:
-        await db.execute(
-            "CREATE TABLE readings (id TEXT, user_id INTEGER, paid INTEGER)"
-        )
+        await db.execute("CREATE TABLE readings (id TEXT, user_id INTEGER, paid INTEGER)")
         await db.executemany(
             "INSERT INTO readings VALUES (?, ?, ?)",
             [("r1", 101, 0), ("r2", 101, 1), ("r3", 102, 0), ("r4", 103, 0)],

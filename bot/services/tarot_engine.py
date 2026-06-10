@@ -3,17 +3,46 @@ from __future__ import annotations
 import random
 
 MAJOR_ARCANA: list[str] = [
-    "The Fool", "The Magician", "The High Priestess", "The Empress",
-    "The Emperor", "The Hierophant", "The Lovers", "The Chariot",
-    "Strength", "The Hermit", "Wheel of Fortune", "Justice",
-    "The Hanged Man", "Death", "Temperance", "The Devil",
-    "The Tower", "The Star", "The Moon", "The Sun", "Judgement", "The World",
+    "The Fool",
+    "The Magician",
+    "The High Priestess",
+    "The Empress",
+    "The Emperor",
+    "The Hierophant",
+    "The Lovers",
+    "The Chariot",
+    "Strength",
+    "The Hermit",
+    "Wheel of Fortune",
+    "Justice",
+    "The Hanged Man",
+    "Death",
+    "Temperance",
+    "The Devil",
+    "The Tower",
+    "The Star",
+    "The Moon",
+    "The Sun",
+    "Judgement",
+    "The World",
 ]
 
 SUITS: list[str] = ["Wands", "Cups", "Swords", "Pentacles"]
 RANKS: list[str] = [
-    "Ace", "Two", "Three", "Four", "Five", "Six", "Seven",
-    "Eight", "Nine", "Ten", "Page", "Knight", "Queen", "King",
+    "Ace",
+    "Two",
+    "Three",
+    "Four",
+    "Five",
+    "Six",
+    "Seven",
+    "Eight",
+    "Nine",
+    "Ten",
+    "Page",
+    "Knight",
+    "Queen",
+    "King",
 ]
 
 

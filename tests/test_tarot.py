@@ -76,9 +76,7 @@ async def test_draw_callback_saves_reading() -> None:
 
     async with aiosqlite.connect(TEST_TAROT_DB) as db:
         db.row_factory = aiosqlite.Row
-        async with db.execute(
-            "SELECT * FROM readings WHERE user_id = 999888"
-        ) as cursor:
+        async with db.execute("SELECT * FROM readings WHERE user_id = 999888") as cursor:
             row = await cursor.fetchone()
 
     assert row is not None

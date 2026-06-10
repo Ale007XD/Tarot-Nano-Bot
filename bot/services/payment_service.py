@@ -6,6 +6,7 @@ from aiogram.types import LabeledPrice
 
 async def create_reading_invoice(bot: Bot, user_id: int) -> None:
     import time
+
     prices = [LabeledPrice(label="🔮 Полное чтение судьбы (3 карты + интерпретация)", amount=69)]
     await bot.send_invoice(
         chat_id=user_id,
