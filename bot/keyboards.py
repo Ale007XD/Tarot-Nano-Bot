@@ -5,9 +5,7 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 def start_kb() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
-        inline_keyboard=[
-            [InlineKeyboardButton(text="🔮 Вытянуть мою карту", callback_data="draw")]
-        ]
+        inline_keyboard=[[InlineKeyboardButton(text="🔮 Вытянуть мою карту", callback_data="draw")]]
     )
 
 

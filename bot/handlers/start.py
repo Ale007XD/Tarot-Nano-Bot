@@ -3,9 +3,9 @@ from __future__ import annotations
 from aiogram import Router
 from aiogram.filters import Command
 from aiogram.types import Message
-from bot.keyboards import start_kb
 
 from bot.database import add_referral, add_user
+from bot.keyboards import start_kb
 
 router = Router()
 
