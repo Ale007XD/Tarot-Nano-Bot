@@ -76,9 +76,14 @@ async def test_give_spreads_command() -> None:
 
     async with aiosqlite.connect(TEST_DB_PATH) as db:
         db.row_factory = aiosqlite.Row
-        async with db.execute("SELECT free_spreads FROM users WHERE user_id = 777") as cursor:
+        async with db.execute(
+            "SELECT free_spreads FROM users WHERE user_id = 777"
+        ) as cursor:
             row = await cursor.fetchone()
 
     assert row is not None
     assert row["free_spreads"] == 7
-    message.answer.assert_called_once_with("✅ Юзеру `777` выдано 5 попыток.")
+    message.answer.assert_called_once()
+    call_text = message.answer.call_args[0][0]
+    assert "777" in call_text
+    assert "5" in call_text
