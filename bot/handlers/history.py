@@ -1,4 +1,5 @@
-# bot/handlers/history.py
+from __future__ import annotations
+
 from aiogram import Router, types
 from aiogram.filters import Command
 
@@ -8,14 +9,17 @@ router = Router()
 
 
 @router.message(Command("history"))
-async def cmd_history(message: types.Message):
+async def cmd_history(message: types.Message) -> None:
+    if not message.from_user:
+        return
     user_id = message.from_user.id
     readings = await get_user_readings(user_id, limit=10)
 
     if not readings:
         await message.answer(
             "🔮 *Ваша история состояний пуста.*\n\n"
-            "Сделайте первый расклад через команду /tarot, чтобы запустить Reflection Engine!",
+            "Сделайте первый расклад через команду /tarot, "
+            "чтобы запустить Reflection Engine!",
             parse_mode="Markdown",
         )
         return
@@ -23,14 +27,13 @@ async def cmd_history(message: types.Message):
     text = "📜 *Reflection Engine | Таймлайн Истории Состояний:*\n\n"
 
     for idx, row in enumerate(readings, 1):
-        # Структура кортежа: id (0), user_id (1), spread (2), cards (3), interpretation (4), paid (5)
-        spread_name = row[2]
-        cards_drawn = row[3]
-        interpretation = row[4]
-        is_paid = row[5]
+        # (0)id (1)spread (2)cards (3)interpretation (4)paid (5)execution_id (6)trace_hash
+        spread_name = str(row[1])
+        cards_drawn = str(row[2])
+        interpretation = str(row[3])
+        is_paid = bool(row[4])
 
         status_marker = "👑 [Paid State]" if is_paid else "🆓 [Free State]"
-        # Обрезаем длинный вывод интерпретации для краткости отображения в листинге
         short_interpretation = (
             interpretation[:120] + "..." if len(interpretation) > 120 else interpretation
         )
