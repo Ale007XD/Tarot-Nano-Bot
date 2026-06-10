@@ -155,3 +155,7 @@ async def admin_getlogs(message: Message) -> None:
         await message.answer_document(FSInputFile("bot.log"), caption="📜 Логи")
     except Exception as e:
         await message.answer(f"❌ Ошибка: {e}")
+
+
+# Alias for backward compatibility with tests
+give_spreads = admin_give
