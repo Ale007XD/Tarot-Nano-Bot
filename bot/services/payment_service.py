@@ -17,7 +17,11 @@ async def create_reading_invoice(
     payload = json.dumps(
         {"user_id": user_id, "execution_id": execution_id, "amount": _READING_AMOUNT}
     )
-    prices = [LabeledPrice(label="🔮 Полное чтение судьбы (3 карты + интерпретация)", amount=_READING_AMOUNT)]
+    prices = [
+        LabeledPrice(
+            label="🔮 Полное чтение судьбы (3 карты + интерпретация)", amount=_READING_AMOUNT
+        )
+    ]
     await bot.send_invoice(
         chat_id=user_id,
         title="🔮 Полное чтение судьбы",
