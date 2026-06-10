@@ -26,11 +26,12 @@ jobs:
           pip install ruff mypy pydantic>=2.0 aiosqlite aiogram>=3.0 \
             pytest pytest-asyncio python-dotenv litellm llm-nano-vm
 
-      - name: Lint (Ruff check)
-        run: ruff check .
-
-      - name: Format (Ruff format)
-        run: ruff format --check .
+      # Fix before check — handles imports uploaded via GitHub UI without local ruff
+      - name: Lint (Ruff fix + check)
+        run: |
+          ruff check --fix .
+          ruff format .
+          ruff check .
 
       - name: Type check (mypy)
         run: mypy --ignore-missing-imports --strict bot/
