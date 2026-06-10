@@ -1,39 +1,38 @@
-# bot/keyboards.py
+from __future__ import annotations
+
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 
-def start_kb():
-    """Стартовая клавиатура — первая кнопка"""
-    kb = InlineKeyboardMarkup(
-        inline_keyboard=[[InlineKeyboardButton(text="🔮 Вытянуть мою карту", callback_data="draw")]]
+def start_kb() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text="🔮 Вытянуть мою карту", callback_data="draw")]
+        ]
     )
-    return kb
 
 
-def paywall_kb():
-    """Кнопка после одной карты — главная точка продажи"""
-    kb = InlineKeyboardMarkup(
+def paywall_kb() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
         inline_keyboard=[
             [
                 InlineKeyboardButton(
-                    text="⭐ Получить полное чтение за 69 Stars", callback_data="buy"
+                    text="⭐ Получить полное чтение за 69 Stars",
+                    callback_data="buy",
                 )
             ]
         ]
     )
-    return kb
 
 
-def share_kb():
-    """Кнопка «Поделиться» после полного чтения"""
-    kb = InlineKeyboardMarkup(
+def share_kb() -> InlineKeyboardMarkup:
+    share_text = "Я только что узнал свою судьбу по картам Таро! 🔮 Попробуй и ты:"
+    return InlineKeyboardMarkup(
         inline_keyboard=[
             [
                 InlineKeyboardButton(
                     text="🔮 Поделиться гаданием",
-                    switch_inline_query="Я только что узнал свою судьбу по картам Таро! 🔮 Попробуй и ты:",
+                    switch_inline_query=share_text,
                 )
             ]
         ]
     )
-    return kb
