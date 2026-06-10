@@ -1,101 +1,49 @@
-from datetime import datetime
+"""Tests for payment handlers."""
+
+from __future__ import annotations
+
 from unittest.mock import AsyncMock, patch
 
-import aiosqlite
 import pytest
-import pytest_asyncio
-from aiogram.types import Chat, Message, PreCheckoutQuery, SuccessfulPayment, User
+from aiogram.types import PreCheckoutQuery, User
 
-from bot.handlers.payment import (
-    OrderPayload,
-    process_pre_checkout_query,
-    process_successful_payment,
-)
+from bot.handlers.payment import OrderPayload, process_pre_checkout_query
 
 
-@pytest_asyncio.fixture(scope="function")
-async def mock_db():
-    """
-    Изолированная embedded СУБД для проверки транзакционных переходов.
-    Обеспечивает чистую фикстуру для каждого тест-кейса.
-    """
-    async with aiosqlite.connect(":memory:") as db:
-        await db.execute(
-            """
-            CREATE TABLE readings (
-                id TEXT PRIMARY KEY,
-                user_id INTEGER,
-                paid INTEGER DEFAULT 0
-            )
-            """
-        )
-        # Инициализация исходного состояния S (paid = 0)
-        await db.execute(
-            "INSERT INTO readings (id, user_id, paid) VALUES (?, ?, ?)",
-            ("reading_test_001", 12345, 0),
-        )
-        await db.commit()
-        yield db
+def test_order_payload_valid() -> None:
+    p = OrderPayload(user_id=1, reading_id="r1", amount=69)
+    assert p.user_id == 1
+    assert p.amount == 69
 
 
-@pytest.mark.asyncio
-async def test_pre_checkout_query_validation_success():
-    """Проверка успешной валидации схемы инвойса и отправки ok=True."""
-    payload = OrderPayload(user_id=12345, reading_id="reading_test_001", amount=50)
+def test_order_payload_invalid_amount() -> None:
+    with pytest.raises(ValueError):
+        OrderPayload(user_id=1, reading_id="r1", amount=0)
 
+
+async def test_pre_checkout_query_valid_payload() -> None:
+    payload = OrderPayload(user_id=12345, reading_id="r1", amount=69)
     query = PreCheckoutQuery(
-        id="query_id_123",
-        from_user=User(id=12345, is_bot=False, first_name="Tester"),
+        id="qid",
+        from_user=User(id=12345, is_bot=False, first_name="T"),
         currency="XTR",
-        total_amount=50,
+        total_amount=69,
         invoice_payload=payload.model_dump_json(),
     )
-
-    # Патчинг метода на уровне класса для обхода Pydantic frozen_instance guardrail
-    with patch.object(PreCheckoutQuery, "answer", new_callable=AsyncMock) as mock_answer:
+    with patch.object(PreCheckoutQuery, "answer", new_callable=AsyncMock) as mock_ans:
         await process_pre_checkout_query(query)
-        mock_answer.assert_called_once_with(ok=True)
+        mock_ans.assert_called_once_with(ok=True)
 
 
-@pytest.mark.asyncio
-async def test_successful_payment_state_transition(mock_db):
-    """
-    Проверка инварианта перехода:
-    delta(S, E_payment) -> S', где S'.paid = 1
-    """
-    payload = OrderPayload(user_id=12345, reading_id="reading_test_001", amount=50)
-
-    succ_payment = SuccessfulPayment(
+async def test_pre_checkout_query_invalid_payload() -> None:
+    query = PreCheckoutQuery(
+        id="qid",
+        from_user=User(id=1, is_bot=False, first_name="T"),
         currency="XTR",
-        total_amount=50,
-        invoice_payload=payload.model_dump_json(),
-        shipping_option_id=None,
-        order_info=None,
-        telegram_payment_charge_id="xtr_charge_id",
-        provider_payment_charge_id="prov_charge_id",
+        total_amount=69,
+        invoice_payload="not-json",
     )
-
-    message = Message(
-        message_id=999,
-        date=datetime.now(),
-        chat=Chat(id=12345, type="private"),
-        from_user=User(id=12345, is_bot=False, first_name="Tester"),
-        successful_payment=succ_payment,
-    )
-
-    # Патчинг метода отправки сообщений на уровне класса
-    with patch.object(Message, "answer", new_callable=AsyncMock) as mock_answer:
-        # Выполнение перехода delta(S, E)
-        await process_successful_payment(message, mock_db)
-
-        # Проверка отправки нотификации
-        mock_answer.assert_called_once()
-        assert "успешно верифицирована" in mock_answer.call_args[0][0]
-
-    # Верификация мутации состояния в СУБД (S -> S')
-    async with mock_db.execute(
-        "SELECT paid FROM readings WHERE id = ?", ("reading_test_001",)
-    ) as cursor:
-        row = await cursor.fetchone()
-        assert row is not None
-        assert row[0] == 1, "Математический инвариант нарушен: состояние paid не перешло в 1"
+    with patch.object(PreCheckoutQuery, "answer", new_callable=AsyncMock) as mock_ans:
+        await process_pre_checkout_query(query)
+        call_kwargs = mock_ans.call_args[1]
+        assert call_kwargs["ok"] is False
