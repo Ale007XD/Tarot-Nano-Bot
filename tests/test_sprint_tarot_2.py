@@ -182,7 +182,7 @@ async def test_full_reading_suspended_saves_pending_and_invoice() -> None:
         patch("bot.tarot.save_pending_execution", new=AsyncMock()) as mock_pending,
         patch("bot.tarot.save_reading", new=AsyncMock()) as mock_save,
         patch("bot.tarot.LLM_MODEL", "test-model"),
-        patch("bot.services.payment_service.create_reading_invoice", new=AsyncMock()) as mock_invoice,
+        patch("bot.services.payment_service.create_reading_invoice", new=AsyncMock()),
     ):
         from bot.tarot import full_reading
         cb = _make_callback(data="full_reading")
@@ -334,3 +334,4 @@ async def test_create_reading_invoice_payload_structure() -> None:
     assert payload["user_id"] == 42
     assert payload["execution_id"] == "tid-exec"
     assert payload["amount"] > 0
+        
