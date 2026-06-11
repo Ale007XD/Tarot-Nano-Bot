@@ -12,7 +12,6 @@ services:
       - TAROT_SALT=${TAROT_SALT}
     volumes:
       - ./tarot.db:/app/tarot.db
-      - ./bot.log:/app/bot.log
     healthcheck:
       test: ["CMD", "python", "healthcheck.py"]
       interval: 30s
