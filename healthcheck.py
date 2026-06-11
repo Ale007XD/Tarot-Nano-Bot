@@ -1,6 +1,7 @@
 """Docker healthcheck — verifies bot db is accessible."""
-import sys
+
 import sqlite3
+import sys
 
 try:
     con = sqlite3.connect("tarot.db", timeout=5)
