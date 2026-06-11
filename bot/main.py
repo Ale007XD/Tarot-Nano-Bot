@@ -6,6 +6,7 @@ import logging
 
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
+from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.enums import ParseMode
 
 from bot.config import TELEGRAM_TOKEN
@@ -16,9 +17,11 @@ from bot.handlers import admin, history, payment, referral, start, tarot
 async def main() -> None:
     logging.basicConfig(level=logging.INFO)
 
+    session = AiohttpSession(timeout=60)
     bot = Bot(
         token=TELEGRAM_TOKEN,
         default=DefaultBotProperties(parse_mode=ParseMode.MARKDOWN),
+        session=session,
     )
 
     dp = Dispatcher()
@@ -40,3 +43,4 @@ if __name__ == "__main__":
         asyncio.run(main())
     except KeyboardInterrupt:
         print("Bot stopped")
+        
