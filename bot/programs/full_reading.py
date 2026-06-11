@@ -21,6 +21,10 @@ FULL_READING: Program = Program(
             id="check_balance",
             type=StepType.TOOL,
             tool="check_balance",
+            args={
+                "user_id": "$user_id",
+                "free_spreads": "$free_spreads",
+            },
             output_key="balance_result",
         ),
         Step(
@@ -34,6 +38,7 @@ FULL_READING: Program = Program(
             id="charge_free",
             type=StepType.TOOL,
             tool="charge_free_spread",
+            args={"user_id": "$user_id"},
             output_key="charge_result",
             next_step="draw_spread",
         ),
@@ -67,7 +72,6 @@ FULL_READING: Program = Program(
             output_key="save_params",
             is_terminal=True,
         ),
-        # --- terminal failure branch ---
         Step(
             id="payment_required",
             type=StepType.TOOL,
