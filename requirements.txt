@@ -3,4 +3,4 @@ aiosqlite
 python-dotenv
 httpx
 openai
-nano_vm
+llm-nano-vm
