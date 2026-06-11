@@ -3,20 +3,18 @@ services:
     build: .
     container_name: tarot-bot
     restart: always
-    # Убираем env_file, так как переменные будут пробрасываться через окружение сервера
-    # Это надежнее для CI/CD, чтобы не создавать лишних файлов
     environment:
       - PYTHONUNBUFFERED=1
-      # Переменные здесь можно не прописывать, если они экспортируются 
-      # в окружение при запуске контейнера через CI/CD
+      - BOT_TOKEN=${BOT_TOKEN}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_API_BASE=${OPENAI_API_BASE}
+      - LLM_MODEL=${LLM_MODEL}
+      - TAROT_SALT=${TAROT_SALT}
     volumes:
-      # Используем полные пути или относительные, важно наличие этих файлов на хосте
       - ./tarot.db:/app/tarot.db
       - ./bot.log:/app/bot.log
     healthcheck:
-      # Убедись, что файл healthcheck.py существует в корне проекта
       test: ["CMD", "python", "healthcheck.py"]
       interval: 30s
       timeout: 10s
       retries: 3
-
