@@ -19,6 +19,11 @@ CARD_OF_THE_DAY: Program = Program(
             id="draw_card",
             type=StepType.TOOL,
             tool="draw_deterministic_card",
+            args={
+                "user_id": "$user_id",
+                "execution_date": "$execution_date",
+                "salt": "$salt",
+            },
             output_key="card_result",
         ),
         Step(
