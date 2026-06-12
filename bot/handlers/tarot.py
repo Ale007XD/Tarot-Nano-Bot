@@ -39,10 +39,19 @@ def _extract_card_of_day(trace: object) -> tuple[str, str] | None:
     """Return (card_name, interpretation) from a successful card_of_day trace."""
     try:
         steps = getattr(trace, "steps", [])
+        card_name = ""
+        interpretation = ""
         for step in steps:
+            step_id = getattr(step, "step_id", "") or getattr(step, "id", "")
             out = getattr(step, "output", None)
-            if isinstance(out, dict) and "card_name" in out:
-                return str(out["card_name"]), str(out.get("interpretation", ""))
+            if step_id == "draw_card" and isinstance(out, dict):
+                card_name = str(out.get("card_name", ""))
+            elif step_id == "llm_interpret" and isinstance(out, str):
+                interpretation = out
+            elif step_id == "llm_interpret" and isinstance(out, dict):
+                interpretation = str(out.get("output", out.get("text", "")))
+        if card_name:
+            return card_name, interpretation
         return None
     except Exception:
         return None
@@ -52,12 +61,19 @@ def _extract_full_reading(trace: object) -> tuple[str, str] | None:
     """Return (cards_text, interpretation) from a successful full_reading trace."""
     try:
         steps = getattr(trace, "steps", [])
+        cards_text = ""
+        interpretation = ""
         for step in steps:
+            step_id = getattr(step, "step_id", "") or getattr(step, "id", "")
             out = getattr(step, "output", None)
-            if isinstance(out, dict) and "spread" in out:
-                cards = str(out.get("spread", ""))
-                interp = str(out.get("interpretation", ""))
-                return cards, interp
+            if step_id == "draw_spread" and isinstance(out, dict):
+                cards_text = str(out.get("cards_text", ""))
+            elif step_id == "llm_interpret" and isinstance(out, str):
+                interpretation = out
+            elif step_id == "llm_interpret" and isinstance(out, dict):
+                interpretation = str(out.get("output", out.get("text", "")))
+        if cards_text or interpretation:
+            return cards_text, interpretation
         return None
     except Exception:
         return None
@@ -191,4 +207,4 @@ async def full_reading(callback: CallbackQuery) -> None:
         await callback.message.answer("⚠️ Расклад недоступен. Попробуйте позже.")
 
     await callback.answer()
-    
+        
