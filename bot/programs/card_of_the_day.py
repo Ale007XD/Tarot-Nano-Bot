@@ -34,6 +34,13 @@ CARD_OF_THE_DAY: Program = Program(
             id="build_save_params",
             type=StepType.TOOL,
             tool="build_card_of_day_save_params",
+            args={
+                "user_id": "$user_id",
+                "card_name": "$card_result.output.card_name",
+                "card_index": "$card_result.output.card_index",
+                "execution_date": "$card_result.output.execution_date",
+                "trace_id": "$trace_id",
+            },
             output_key="save_params",
             is_terminal=True,
         ),
