@@ -161,15 +161,18 @@ async def full_reading(callback: CallbackQuery) -> None:
 
     status = str(getattr(trace, "status", "")).upper()
 
-    if _SUSPENDED in status:
-        # FSM paused at payment gate — persist trace, send invoice
-        try:
-            trace_json = trace.model_dump_json()
-        except Exception:
-            trace_json = json.dumps({"trace_id": str(getattr(trace, "trace_id", ""))})
+    # Detect payment_required branch: terminal step output has action=REQUIRES_ACTION
+    _payment_required = False
+    for _s in getattr(trace, "steps", []):
+        _out = getattr(_s, "output", None)
+        if isinstance(_out, dict) and _out.get("action") == "REQUIRES_ACTION":
+            _payment_required = True
+            break
 
+    if _SUSPENDED in status or _payment_required:
+        # Route to payment — save placeholder, send invoice
         execution_id = str(getattr(trace, "trace_id", ""))
-        await save_pending_execution(user_id, execution_id, trace_json)
+        await save_pending_execution(user_id, execution_id, "{}")
 
         from bot.services.payment_service import create_reading_invoice  # local import avoids cycle
         await create_reading_invoice(callback.bot, user_id, execution_id=execution_id)
