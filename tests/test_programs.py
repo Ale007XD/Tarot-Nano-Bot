@@ -29,7 +29,7 @@ class TestCardOfTheDayProgram:
 
     def test_llm_step_has_allowed_outputs(self) -> None:
         step = next(s for s in CARD_OF_THE_DAY.steps if s.id == "llm_interpret")
-        assert step.allowed_outputs == ["INTERPRETATION_COMPLETE"]
+        assert step.allowed_outputs is None  # removed: LLM free-text, no governance sentinel needed
 
     def test_all_step_ids_unique(self) -> None:
         ids = [s.id for s in CARD_OF_THE_DAY.steps]
@@ -80,7 +80,7 @@ class TestFullReadingProgram:
 
     def test_llm_step_has_allowed_outputs(self) -> None:
         step = next(s for s in FULL_READING.steps if s.id == "llm_interpret")
-        assert step.allowed_outputs == ["INTERPRETATION_COMPLETE"]
+        assert step.allowed_outputs is None  # removed: LLM free-text, no governance sentinel needed
 
     def test_all_step_ids_unique(self) -> None:
         ids = [s.id for s in FULL_READING.steps]
