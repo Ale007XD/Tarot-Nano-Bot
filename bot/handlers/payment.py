@@ -6,7 +6,6 @@ import logging
 
 from aiogram import F, Router
 from aiogram.types import Message, PreCheckoutQuery
-from nano_vm.models import Trace
 from pydantic import BaseModel, Field
 
 from bot.config import LLM_MODEL
@@ -16,7 +15,7 @@ from bot.database import (
     save_reading,
 )
 from bot.keyboards import share_kb
-from bot.vm_runner import get_trace_hash, resume_full_reading
+from bot.vm_runner import get_trace_hash, run_full_reading
 
 router = Router(name="payment_router")
 
@@ -55,41 +54,25 @@ async def process_successful_payment(message: Message) -> None:
         await message.answer("🚨 Ошибка разбора платежа. Обратитесь в поддержку.")
         return
 
-    pending = await get_pending_execution(user_id)
-    if pending is None:
-        logging.warning(f"[Payment] No pending execution for user={user_id}")
-        await message.answer(
-            "⚠️ Оплата получена, но активный расклад не найден. Обратитесь в поддержку."
-        )
-        return
+    await delete_pending_execution(user_id)
 
-    execution_id_db, trace_json = pending
-
-    if execution_id_db != payload.execution_id:
-        logging.warning(
-            f"[Payment] execution_id mismatch: db={execution_id_db} payload={payload.execution_id}"
-        )
-
+    # Run full reading with 1 paid spread (Stars payment = 1 prepaid spread)
     try:
-        trace = Trace.model_validate_json(trace_json)
-        charge_id = successful_payment.telegram_payment_charge_id
-        resumed = await resume_full_reading(
-            trace=trace,
-            charge_id=charge_id,
+        resumed = await run_full_reading(
+            user_id=user_id,
+            free_spreads=1,
             model=LLM_MODEL,
         )
     except Exception as e:
-        logging.error(f"[Payment] resume_full_reading failed: {e}")
+        logging.error(f"[Payment] run_full_reading after payment failed: {e}")
         await message.answer(
-            "🚨 Ошибка при продолжении расклада после оплаты. Обратитесь в поддержку."
+            "🚨 Ошибка при запуске расклада после оплаты. Обратитесь в поддержку."
         )
         return
-    finally:
-        await delete_pending_execution(user_id)
 
     status = str(getattr(resumed, "status", "")).upper()
     if not status.endswith("SUCCESS"):
-        logging.error(f"[Payment] resume ended with status={status}")
+        logging.error(f"[Payment] run ended with status={status}")
         await message.answer(
             "⚠️ Оплата получена, но расклад не завершился корректно. Обратитесь в поддержку."
         )
@@ -100,11 +83,12 @@ async def process_successful_payment(message: Message) -> None:
     try:
         steps = getattr(resumed, "steps", [])
         for step in steps:
+            step_id = getattr(step, "step_id", "") or getattr(step, "id", "")
             out = getattr(step, "output", None)
-            if isinstance(out, dict) and "spread" in out:
-                cards_text = str(out.get("spread", ""))
-                interpretation = str(out.get("interpretation", ""))
-                break
+            if step_id == "draw_spread" and isinstance(out, dict):
+                cards_text = str(out.get("cards_text", ""))
+            elif step_id == "llm_interpret" and isinstance(out, str):
+                interpretation = out
     except Exception as e:
         logging.error(f"[Payment] trace extraction failed: {e}")
 
@@ -121,9 +105,13 @@ async def process_successful_payment(message: Message) -> None:
         trace_hash=trace_hash,
     )
 
-    msg = f"🔮 **Оплата подтверждена! Полный расклад**\n\n{cards_text}\n\n{interpretation}"
+    msg = (
+        f"🔮 **Оплата подтверждена! Полный расклад**\n\n"
+        f"{cards_text}\n\n{interpretation}"
+    )
     if len(msg) > 4000:
         await message.answer(msg[:4000])
         await message.answer(msg[4000:], reply_markup=share_kb())
     else:
         await message.answer(msg, reply_markup=share_kb())
+        
