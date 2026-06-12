@@ -1,12 +1,3 @@
-"""Program: card_of_the_day
-
-Flow:
-  draw_card → llm_interpret → build_save_params [terminal: SUCCESS]
-
-FSM failure (LLM on_error=FAIL) → Trace.status=FAILED, no separate terminal step needed.
-build_save_params id contains no failure keyword → PV-13 WARNING expected (acceptable).
-"""
-
 from __future__ import annotations
 
 from nano_vm import OnError, Program, StepType
@@ -31,14 +22,11 @@ CARD_OF_THE_DAY: Program = Program(
             type=StepType.LLM,
             prompt=(
                 "You are a mystical tarot reader. "
-                "The user has drawn their Card of the Day: $card_result.output.card_name "
-                "on $card_result.output.execution_date.\n\n"
+                "The user has drawn their Card of the Day. "
                 "Write a personal, warm, mysterious interpretation in 2-3 paragraphs. "
-                "Speak directly to the person. "
-                "End your response with exactly: INTERPRETATION_COMPLETE"
+                "Speak directly to the person."
             ),
             output_key="interpretation",
-            allowed_outputs=["INTERPRETATION_COMPLETE"],
             max_retries=2,
             on_error=OnError.FAIL,
         ),

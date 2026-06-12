@@ -1,14 +1,3 @@
-"""Program: full_reading
-
-Flow:
-  check_balance[tool] → balance_gate[condition]
-    → [FREE]  charge_free → draw_spread → llm_interpret → build_save_params [terminal]
-    → [other] payment_required [terminal]
-
-Separate tool + condition steps: ProgramValidator sees CONDITION edges (then/otherwise).
-TOOL step with condition/then/otherwise is not traversed by validator BFS.
-"""
-
 from __future__ import annotations
 
 from nano_vm import OnError, Program, StepType
@@ -53,15 +42,12 @@ FULL_READING: Program = Program(
             type=StepType.LLM,
             prompt=(
                 "You are a mystical tarot reader. "
-                "Interpret this Past/Present/Future spread:\n\n"
-                "$spread_result.output.cards_text\n\n"
+                "Interpret this Past/Present/Future spread. "
                 "Write a personal, warm, mysterious interpretation. "
                 "Speak directly to the person. "
-                "Cover each card position meaningfully. "
-                "End your response with exactly: INTERPRETATION_COMPLETE"
+                "Cover each card position meaningfully."
             ),
             output_key="interpretation",
-            allowed_outputs=["INTERPRETATION_COMPLETE"],
             max_retries=2,
             on_error=OnError.FAIL,
         ),
