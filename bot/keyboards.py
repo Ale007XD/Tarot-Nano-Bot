@@ -2,33 +2,30 @@ from __future__ import annotations
 
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
+from bot.i18n import t
 
-def start_kb() -> InlineKeyboardMarkup:
+
+def start_kb(lang: str = "en") -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
-        inline_keyboard=[[InlineKeyboardButton(text="🔮 Вытянуть мою карту", callback_data="draw")]]
+        inline_keyboard=[[InlineKeyboardButton(text=t("btn_draw", lang), callback_data="draw")]]
     )
 
 
-def paywall_kb() -> InlineKeyboardMarkup:
+def paywall_kb(lang: str = "en") -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         inline_keyboard=[
-            [
-                InlineKeyboardButton(
-                    text="⭐ Получить полное чтение за 69 Stars",
-                    callback_data="buy",
-                )
-            ]
+            [InlineKeyboardButton(text=t("btn_buy", lang), callback_data="buy")]
         ]
     )
 
 
-def share_kb() -> InlineKeyboardMarkup:
-    share_text = "Я только что узнал свою судьбу по картам Таро! 🔮 Попробуй и ты:"
+def share_kb(lang: str = "en") -> InlineKeyboardMarkup:
+    share_text = "I just got my tarot reading from Destiny Oracle! 🔮 Try it:"
     return InlineKeyboardMarkup(
         inline_keyboard=[
             [
                 InlineKeyboardButton(
-                    text="🔮 Поделиться гаданием",
+                    text=t("btn_share", lang),
                     switch_inline_query=share_text,
                 )
             ]
