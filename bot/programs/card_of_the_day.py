@@ -24,7 +24,8 @@ CARD_OF_THE_DAY: Program = Program(
                 "You are a mystical tarot reader. "
                 "The user has drawn their Card of the Day. "
                 "Write a personal, warm, mysterious interpretation in 2-3 paragraphs. "
-                "Speak directly to the person."
+                "Speak directly to the person. "
+                "Respond in $language."
             ),
             output_key="interpretation",
             max_retries=2,

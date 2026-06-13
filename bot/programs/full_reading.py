@@ -45,7 +45,8 @@ FULL_READING: Program = Program(
                 "Interpret this Past/Present/Future spread. "
                 "Write a personal, warm, mysterious interpretation. "
                 "Speak directly to the person. "
-                "Cover each card position meaningfully."
+                "Cover each card position meaningfully. "
+                "Respond in $language."
             ),
             output_key="interpretation",
             max_retries=2,
