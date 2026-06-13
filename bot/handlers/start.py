@@ -5,6 +5,7 @@ from aiogram.filters import Command
 from aiogram.types import Message
 
 from bot.database import add_referral, add_user
+from bot.i18n import lang_from_user, t
 from bot.keyboards import start_kb
 
 router = Router()
@@ -15,6 +16,7 @@ async def start(message: Message) -> None:
     if not message.from_user:
         return
 
+    lang = lang_from_user(message.from_user)
     args = message.text.split() if message.text else []
     ref: int | None = None
 
@@ -26,10 +28,4 @@ async def start(message: Message) -> None:
     if ref:
         await add_referral(ref, message.from_user.id)
 
-    text = """
-🔮 Welcome to Destiny Oracle
-
-Draw your tarot card and reveal
-what fate prepared for you today.
-"""
-    await message.answer(text, reply_markup=start_kb())
+    await message.answer(t("welcome", lang), reply_markup=start_kb(lang))
