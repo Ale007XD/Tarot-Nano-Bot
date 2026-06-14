@@ -114,9 +114,6 @@ async def test_st3_01_get_top_users_sorted(tmp_path: Any) -> None:
     db_file = str(tmp_path / "t.db")
     with patch("bot.config.DB_PATH", db_file):
         await _make_db(db_file)
-        from bot.database import get_top_users
-        rows = await get_top_users.__wrapped__(db_file) if hasattr(get_top_users, "__wrapped__") else None  # type: ignore[attr-defined]
-
     # Call directly via aiosqlite
     async with aiosqlite.connect(db_file) as db:
         cursor = await db.execute("""
