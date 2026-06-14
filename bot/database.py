@@ -70,6 +70,16 @@ async def init_db() -> None:
             )
         """)
 
+        # Migration: add columns introduced in sprint_tarot_1 to pre-existing DBs
+        existing: list[tuple[object, ...]] = list(
+            await (await db.execute("PRAGMA table_info(readings)")).fetchall()
+        )
+        col_names = {row[1] for row in existing}  # type: ignore[index]
+        if "execution_id" not in col_names:
+            await db.execute("ALTER TABLE readings ADD COLUMN execution_id TEXT")
+        if "trace_hash" not in col_names:
+            await db.execute("ALTER TABLE readings ADD COLUMN trace_hash TEXT")
+
         await db.commit()
 
 
