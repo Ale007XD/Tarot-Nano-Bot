@@ -151,4 +151,3 @@ user → оплачивает
 - Инфраструктура: [llm-nano-vm](https://github.com/Ale007XD/nano_vm) + [nano-vm-mcp](https://github.com/Ale007XD/nano-vm-mcp)
 
 > nano-vm контролирует **что агент делает** — не что он видит, не что он говорит.
-> 
