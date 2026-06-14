@@ -11,7 +11,7 @@ from aiogram.enums import ParseMode
 
 from bot.config import TELEGRAM_TOKEN
 from bot.database import init_db
-from bot.handlers import admin, history, payment, referral, start, tarot
+from bot.handlers import admin, history, payment, referral, showcase, start, tarot
 
 
 async def main() -> None:
@@ -29,6 +29,7 @@ async def main() -> None:
     dp.include_router(admin.router)
     dp.include_router(start.router)
     dp.include_router(history.router)
+    dp.include_router(showcase.router)
     dp.include_router(tarot.router)
     dp.include_router(payment.router)
     dp.include_router(referral.router)

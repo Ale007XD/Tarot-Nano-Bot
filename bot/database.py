@@ -12,6 +12,9 @@ __all__ = [
     "add_referral",
     "save_reading",
     "get_user_readings",
+    "get_top_users",
+    "get_recent_traces",
+    "get_reading_by_trace_hash",
     "save_pending_execution",
     "get_pending_execution",
     "delete_pending_execution",
@@ -216,3 +219,70 @@ async def delete_pending_execution(user_id: int) -> None:
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute("DELETE FROM pending_executions WHERE user_id=?", (user_id,))
         await db.commit()
+
+
+async def get_top_users(limit: int = 10) -> list[tuple[int, str | None, int, int]]:
+    """Return top users by reading count: (user_id, username, total_readings, paid_readings)."""
+    async with aiosqlite.connect(DB_PATH) as db:
+        cursor = await db.execute(
+            """
+            SELECT u.user_id, u.username,
+                   COUNT(r.id) as total,
+                   SUM(CASE WHEN r.paid=1 THEN 1 ELSE 0 END) as paid
+            FROM users u
+            LEFT JOIN readings r ON u.user_id = r.user_id
+            GROUP BY u.user_id
+            ORDER BY total DESC
+            LIMIT ?
+            """,
+            (limit,),
+        )
+        rows = await cursor.fetchall()
+        return [
+            (int(row[0]), str(row[1]) if row[1] else None, int(row[2] or 0), int(row[3] or 0))
+            for row in rows
+        ]
+
+
+async def get_recent_traces(limit: int = 20) -> list[tuple[int, str, str, str | None]]:
+    """Return recent readings with trace info: (user_id, spread, created_at, trace_hash)."""
+    async with aiosqlite.connect(DB_PATH) as db:
+        cursor = await db.execute(
+            """
+            SELECT user_id, spread,
+                   datetime(created_at, 'unixepoch') as ts,
+                   trace_hash
+            FROM readings
+            ORDER BY created_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        )
+        rows = await cursor.fetchall()
+        return [
+            (int(row[0]), str(row[1]), str(row[2]), str(row[3]) if row[3] else None)
+            for row in rows
+        ]
+
+
+async def get_reading_by_trace_hash(trace_hash: str) -> tuple[int, str, str, str] | None:
+    """Lookup a reading by its trace_hash for user verification.
+
+    Returns (user_id, spread, created_at, trace_hash) or None.
+    """
+    async with aiosqlite.connect(DB_PATH) as db:
+        cursor = await db.execute(
+            """
+            SELECT user_id, spread,
+                   datetime(created_at, 'unixepoch') as ts,
+                   trace_hash
+            FROM readings
+            WHERE trace_hash = ?
+            LIMIT 1
+            """,
+            (trace_hash,),
+        )
+        row = await cursor.fetchone()
+        if row is None:
+            return None
+        return (int(row[0]), str(row[1]), str(row[2]), str(row[3]))

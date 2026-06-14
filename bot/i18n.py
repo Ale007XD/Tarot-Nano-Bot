@@ -56,6 +56,28 @@ _TEXTS: dict[str, dict[str, str]] = {
             "🔮 Invite friends and get a free reading for each one!\n\n"
             "Your invite link:\n{link}"
         ),
+        # showcase: /my_traces
+        "traces_empty": (
+            "\U0001f52e *No readings yet.*\n\n"
+            "Draw your first card to create your first governed trace!"
+        ),
+        "traces_title": "\U0001f517 *Your Governed Traces*\n",
+        "traces_no_hash": "_(no hash \u2014 pre-governance reading)_",
+        "traces_verify_hint": (
+            "\U0001f4a1 Each reading is backed by a deterministic FSM trace.\n"
+            "Use /verify `<hash>` to prove any reading is authentic."
+        ),
+        # showcase: /verify
+        "verify_usage": "Usage: `/verify <trace_hash>`\n\nCopy the hash from /my\\_traces.",
+        "verify_invalid_hash": "\u2757 Hash too short. Copy the full hash from /my\\_traces.",
+        "verify_not_found": (
+            "\u274c *Not found.*\n\n"
+            "No reading matches this hash. "
+            "The hash may be incorrect or the reading was removed."
+        ),
+        "verify_ok": "\u2705 *Reading verified.*",
+        "verify_yours": "\U0001f52e This reading belongs to you.",
+        "verify_other": "\U0001f464 This reading belongs to another user.",
     },
     "ru": {
         # start
@@ -107,6 +129,26 @@ _TEXTS: dict[str, dict[str, str]] = {
             "🔮 Приглашайте друзей и получайте бесплатный расклад за каждого!\n\n"
             "Ваша реферальная ссылка:\n{link}"
         ),
+        # showcase: /my_traces
+        "traces_empty": (
+            "\U0001f52e *\u0420\u0430\u0441\u043a\u043b\u0430\u0434\u043e\u0432 \u043f\u043e\u043a\u0430 \u043d\u0435\u0442.*\n\n"
+            "\u0412\u044b\u0442\u044f\u043d\u0438\u0442\u0435 \u043f\u0435\u0440\u0432\u0443\u044e \u043a\u0430\u0440\u0442\u0443, \u0447\u0442\u043e\u0431\u044b \u0441\u043e\u0437\u0434\u0430\u0442\u044c \u0432\u0430\u0448 \u043f\u0435\u0440\u0432\u044b\u0439 \u0443\u043f\u0440\u0430\u0432\u043b\u044f\u0435\u043c\u044b\u0439 \u0442\u0440\u0435\u0439\u0441!"
+        ),
+        "traces_title": "\U0001f517 *\u0412\u0430\u0448\u0438 \u0433\u043e\u0432\u0435\u0440\u043d\u0430\u043d\u0441-\u0442\u0440\u0435\u0439\u0441\u044b*\n",
+        "traces_no_hash": "_(\u0445\u044d\u0448 \u043e\u0442\u0441\u0443\u0442\u0441\u0442\u0432\u0443\u0435\u0442 \u2014 \u0441\u0442\u0430\u0440\u044b\u0439 \u0440\u0430\u0441\u043a\u043b\u0430\u0434)_",
+        "traces_verify_hint": (
+            "\U0001f4a1 \u041a\u0430\u0436\u0434\u044b\u0439 \u0440\u0430\u0441\u043a\u043b\u0430\u0434 \u043f\u043e\u0434\u0442\u0432\u0435\u0440\u0436\u0434\u0451\u043d \u0434\u0435\u0442\u0435\u0440\u043c\u0438\u043d\u0438\u0440\u043e\u0432\u0430\u043d\u043d\u044b\u043c FSM-\u0442\u0440\u0435\u0439\u0441\u043e\u043c.\n"
+            "\u0418\u0441\u043f\u043e\u043b\u044c\u0437\u0443\u0439\u0442\u0435 /verify `<hash>` \u0434\u043b\u044f \u043f\u0440\u043e\u0432\u0435\u0440\u043a\u0438 \u043f\u043e\u0434\u043b\u0438\u043d\u043d\u043e\u0441\u0442\u0438."
+        ),
+        "verify_usage": "\u0424\u043e\u0440\u043c\u0430\u0442: `/verify <trace_hash>`\n\n\u0421\u043a\u043e\u043f\u0438\u0440\u0443\u0439\u0442\u0435 \u0445\u044d\u0448 \u0438\u0437 /my\\_traces.",
+        "verify_invalid_hash": "\u2757 \u0425\u044d\u0448 \u0441\u043b\u0438\u0448\u043a\u043e\u043c \u043a\u043e\u0440\u043e\u0442\u043a\u0438\u0439. \u0421\u043a\u043e\u043f\u0438\u0440\u0443\u0439\u0442\u0435 \u043f\u043e\u043b\u043d\u044b\u0439 \u0445\u044d\u0448 \u0438\u0437 /my\\_traces.",
+        "verify_not_found": (
+            "\u274c *\u041d\u0435 \u043d\u0430\u0439\u0434\u0435\u043d\u043e.*\n\n"
+            "\u041d\u0438 \u043e\u0434\u0438\u043d \u0440\u0430\u0441\u043a\u043b\u0430\u0434 \u043d\u0435 \u0441\u043e\u043e\u0442\u0432\u0435\u0442\u0441\u0442\u0432\u0443\u0435\u0442 \u044d\u0442\u043e\u043c\u0443 \u0445\u044d\u0448\u0443."
+        ),
+        "verify_ok": "\u2705 *\u0420\u0430\u0441\u043a\u043b\u0430\u0434 \u043f\u043e\u0434\u0442\u0432\u0435\u0440\u0436\u0434\u0451\u043d.*",
+        "verify_yours": "\U0001f52e \u042d\u0442\u043e \u0432\u0430\u0448 \u0440\u0430\u0441\u043a\u043b\u0430\u0434.",
+        "verify_other": "\U0001f464 \u042d\u0442\u043e \u0440\u0430\u0441\u043a\u043b\u0430\u0434 \u0434\u0440\u0443\u0433\u043e\u0433\u043e \u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044f.",
     },
 }
 
