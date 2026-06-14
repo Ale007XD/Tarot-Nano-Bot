@@ -45,7 +45,7 @@ async def process_successful_payment(message: Message) -> None:
     user_id = message.from_user.id
 
     try:
-        payload = OrderPayload.model_validate_json(successful_payment.invoice_payload)
+        OrderPayload.model_validate_json(successful_payment.invoice_payload)
     except Exception as e:
         logging.error(f"[Payment] Payload parse failure: {e}")
         await message.answer(t("err_payment_parse", lang))
