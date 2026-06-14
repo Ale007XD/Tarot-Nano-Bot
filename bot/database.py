@@ -74,10 +74,8 @@ async def init_db() -> None:
         """)
 
         # Migration: add columns introduced in sprint_tarot_1 to pre-existing DBs
-        existing: list[tuple[object, ...]] = list(
-            await (await db.execute("PRAGMA table_info(readings)")).fetchall()
-        )
-        col_names = {row[1] for row in existing}  # type: ignore[index]
+        cursor = await db.execute("PRAGMA table_info(readings)")
+        col_names = {row[1] for row in await cursor.fetchall()}
         if "execution_id" not in col_names:
             await db.execute("ALTER TABLE readings ADD COLUMN execution_id TEXT")
         if "trace_hash" not in col_names:
@@ -260,7 +258,8 @@ async def get_recent_traces(limit: int = 20) -> list[tuple[int, str, str, str | 
         )
         rows = await cursor.fetchall()
         return [
-            (int(row[0]), str(row[1]), str(row[2]), str(row[3]) if row[3] else None) for row in rows
+            (int(row[0]), str(row[1]), str(row[2]), str(row[3]) if row[3] else None)
+            for row in rows
         ]
 
 
