@@ -11,7 +11,7 @@ from aiogram.filters import Command, CommandObject
 from aiogram.types import FSInputFile, Message
 
 from bot.config import ADMIN_ID
-from bot.database import DB_PATH
+from bot.database import DB_PATH, get_recent_traces, get_top_users
 from bot.observatory.trace_analyzer import TraceAnalyzer
 
 router = Router()
@@ -23,6 +23,8 @@ async def admin_help(message: Message) -> None:
     help_text = (
         "⚡️ **Панель управления**\n\n"
         "📈 /stats — Статистика рантайма\n"
+        "👥 /users — Топ пользователей по раскладам\n"
+        "🔗 /traces — Последние 20 трейсов с хэшами\n"
         "📢 /broadcast [текст] — Рассылка всем юзерам\n"
         "🎁 /give [ID] [кол-во] — Выдать бесплатные попытки\n"
         "📂 /getdb — Скачать базу данных\n"
@@ -155,6 +157,37 @@ async def admin_getlogs(message: Message) -> None:
         await message.answer_document(FSInputFile("bot.log"), caption="📜 Логи")
     except Exception as e:
         await message.answer(f"❌ Ошибка: {e}")
+
+
+@router.message(Command("users"))
+async def admin_users(message: Message) -> None:
+    rows = await get_top_users(limit=10)
+    if not rows:
+        await message.answer("👥 Пользователей пока нет.")
+        return
+
+    lines = ["👥 **Топ пользователей**\n"]
+    for i, (user_id, username, total, paid) in enumerate(rows, 1):
+        name = f"@{username}" if username else f"id:{user_id}"
+        cr = f"{paid / total * 100:.0f}%" if total > 0 else "—"
+        lines.append(f"{i}. {name} — {total} раскладов, {paid} оплач. (CR {cr})")
+
+    await message.answer("\n".join(lines), parse_mode="Markdown")
+
+
+@router.message(Command("traces"))
+async def admin_traces(message: Message) -> None:
+    rows = await get_recent_traces(limit=20)
+    if not rows:
+        await message.answer("🔗 Трейсов пока нет.")
+        return
+
+    lines = ["🔗 **Последние трейсы**\n"]
+    for user_id, spread, ts, trace_hash in rows:
+        hash_display = f"`{trace_hash[:12]}…`" if trace_hash else "_(нет хэша)_"
+        lines.append(f"uid:{user_id} | {spread} | {ts[:16]} | {hash_display}")
+
+    await message.answer("\n".join(lines), parse_mode="Markdown")
 
 
 # Alias for backward compatibility with tests
