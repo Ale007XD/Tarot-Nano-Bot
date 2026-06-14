@@ -1,4 +1,5 @@
 """vm_runner.py — ExecutionVM factory and run/resume helpers."""
+
 from __future__ import annotations
 
 from collections.abc import Callable

@@ -3,6 +3,7 @@
 Default language: English (en).
 LLM interpretations use prompt-level language injection (see programs/).
 """
+
 from __future__ import annotations
 
 _TEXTS: dict[str, dict[str, str]] = {
@@ -37,24 +38,20 @@ _TEXTS: dict[str, dict[str, str]] = {
         "err_payment_no_pending": (
             "⚠️ Payment received, but no active reading found. Please contact support."
         ),
-        "err_payment_resume": (
-            "🚨 Error resuming reading after payment. Please contact support."
-        ),
+        "err_payment_resume": ("🚨 Error resuming reading after payment. Please contact support."),
         "err_payment_incomplete": (
             "⚠️ Payment received, but reading did not complete. Please contact support."
         ),
         # history
         "history_empty": (
-            "🔮 *Your reading history is empty.*\n\n"
-            "Draw your first card to begin your journey!"
+            "🔮 *Your reading history is empty.*\n\nDraw your first card to begin your journey!"
         ),
         "history_title": "📜 *Reading History*\n\n",
         "history_paid_marker": "👑 [Paid]",
         "history_free_marker": "🆓 [Free]",
         # referral
         "invite_text": (
-            "🔮 Invite friends and get a free reading for each one!\n\n"
-            "Your invite link:\n{link}"
+            "🔮 Invite friends and get a free reading for each one!\n\nYour invite link:\n{link}"
         ),
         # showcase: /my_traces
         "traces_empty": (
@@ -118,8 +115,7 @@ _TEXTS: dict[str, dict[str, str]] = {
         ),
         # history
         "history_empty": (
-            "🔮 *Ваша история раскладов пуста.*\n\n"
-            "Вытяните первую карту, чтобы начать!"
+            "🔮 *Ваша история раскладов пуста.*\n\nВытяните первую карту, чтобы начать!"
         ),
         "history_title": "📜 *История раскладов*\n\n",
         "history_paid_marker": "👑 [Оплачено]",

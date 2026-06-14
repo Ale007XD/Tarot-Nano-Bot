@@ -1,16 +1,15 @@
 """Temporary /test_payment command — DEV ONLY, remove before prod launch."""
+
 from __future__ import annotations
 
-import json
 import logging
-from unittest.mock import MagicMock
 
 from aiogram import Router
 from aiogram.filters import Command
 from aiogram.types import Message
 
 from bot.config import LLM_MODEL
-from bot.database import delete_pending_execution, get_pending_execution, save_reading
+from bot.database import delete_pending_execution, save_reading
 from bot.keyboards import share_kb
 from bot.vm_runner import get_trace_hash, run_full_reading
 

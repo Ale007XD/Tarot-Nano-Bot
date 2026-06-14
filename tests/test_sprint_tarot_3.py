@@ -2,9 +2,9 @@
 
 Tests: ST3-01..12
 """
+
 from __future__ import annotations
 
-import asyncio
 import os
 import sys
 import types
@@ -16,6 +16,7 @@ import pytest
 # ---------------------------------------------------------------------------
 # Stub nano_vm + litellm BEFORE any bot imports
 # ---------------------------------------------------------------------------
+
 
 def _stub_nano_vm() -> None:
     """Idempotent nano_vm stub for CI without llm-nano-vm installed."""
@@ -109,6 +110,7 @@ async def _make_db(path: str = ":memory:") -> None:
 # ST3-01: get_top_users returns sorted rows
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.asyncio
 async def test_st3_01_get_top_users_sorted(tmp_path: Any) -> None:
     db_file = str(tmp_path / "t.db")
@@ -171,7 +173,7 @@ async def test_st3_04_verify_found(tmp_path: Any) -> None:
         cursor = await db.execute(
             "SELECT user_id, spread, datetime(created_at,'unixepoch'), trace_hash"
             " FROM readings WHERE trace_hash=? LIMIT 1",
-            ("abc123hash",)
+            ("abc123hash",),
         )
         row = await cursor.fetchone()
     assert row is not None
@@ -185,9 +187,7 @@ async def test_st3_05_verify_not_found(tmp_path: Any) -> None:
     db_file = str(tmp_path / "t.db")
     await _make_db(db_file)
     async with aiosqlite.connect(db_file) as db:
-        cursor = await db.execute(
-            "SELECT * FROM readings WHERE trace_hash=?", ("nonexistent",)
-        )
+        cursor = await db.execute("SELECT * FROM readings WHERE trace_hash=?", ("nonexistent",))
         row = await cursor.fetchone()
     assert row is None
 
@@ -230,9 +230,19 @@ async def test_st3_06_migration_adds_columns(tmp_path: Any) -> None:
 # ST3-07: i18n keys exist for en + ru
 def test_st3_07_i18n_showcase_keys_en() -> None:
     from bot.i18n import t
-    keys = ["traces_empty", "traces_title", "traces_no_hash", "traces_verify_hint",
-            "verify_usage", "verify_invalid_hash", "verify_not_found", "verify_ok",
-            "verify_yours", "verify_other"]
+
+    keys = [
+        "traces_empty",
+        "traces_title",
+        "traces_no_hash",
+        "traces_verify_hint",
+        "verify_usage",
+        "verify_invalid_hash",
+        "verify_not_found",
+        "verify_ok",
+        "verify_yours",
+        "verify_other",
+    ]
     for k in keys:
         val = t(k, "en")
         assert val != k, f"Missing EN key: {k}"
@@ -240,6 +250,7 @@ def test_st3_07_i18n_showcase_keys_en() -> None:
 
 def test_st3_08_i18n_showcase_keys_ru() -> None:
     from bot.i18n import t
+
     keys = ["traces_empty", "traces_title", "verify_ok", "verify_not_found"]
     for k in keys:
         val = t(k, "ru")
@@ -248,7 +259,9 @@ def test_st3_08_i18n_showcase_keys_ru() -> None:
 
 # ST3-09: showcase router importable (direct module import bypasses handlers.__init__)
 def test_st3_09_showcase_importable() -> None:
-    import importlib.util, pathlib
+    import importlib.util
+    import pathlib
+
     spec = importlib.util.spec_from_file_location(
         "bot.handlers.showcase",
         pathlib.Path(__file__).parent.parent / "bot" / "handlers" / "showcase.py",
@@ -261,7 +274,9 @@ def test_st3_09_showcase_importable() -> None:
 
 # ST3-10: admin handler has new commands (direct import)
 def test_st3_10_admin_importable() -> None:
-    import importlib.util, pathlib
+    import importlib.util
+    import pathlib
+
     # admin.py imports get_top_users etc from bot.database — already loaded ok
     spec = importlib.util.spec_from_file_location(
         "bot.handlers.admin_check",
@@ -278,7 +293,9 @@ def test_st3_10_admin_importable() -> None:
 # ST3-11: /my_traces returns empty message when user has no readings
 @pytest.mark.asyncio
 async def test_st3_11_my_traces_empty() -> None:
-    import importlib.util, pathlib
+    import importlib.util
+    import pathlib
+
     spec = importlib.util.spec_from_file_location(
         "bot.handlers.showcase_11",
         pathlib.Path(__file__).parent.parent / "bot" / "handlers" / "showcase.py",
@@ -303,7 +320,9 @@ async def test_st3_11_my_traces_empty() -> None:
 # ST3-12: /verify returns not_found for unknown hash
 @pytest.mark.asyncio
 async def test_st3_12_verify_not_found_response() -> None:
-    import importlib.util, pathlib
+    import importlib.util
+    import pathlib
+
     spec = importlib.util.spec_from_file_location(
         "bot.handlers.showcase_12",
         pathlib.Path(__file__).parent.parent / "bot" / "handlers" / "showcase.py",

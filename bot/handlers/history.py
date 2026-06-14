@@ -30,7 +30,9 @@ async def cmd_history(message: types.Message) -> None:
         interpretation = str(row[3])
         is_paid = bool(row[4])
 
-        status_marker = t("history_paid_marker", lang) if is_paid else t("history_free_marker", lang)
+        status_marker = (
+            t("history_paid_marker", lang) if is_paid else t("history_free_marker", lang)
+        )
         short_interpretation = (
             interpretation[:120] + "..." if len(interpretation) > 120 else interpretation
         )

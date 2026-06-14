@@ -3,6 +3,7 @@
 /my_traces — list the user's readings with execution_id + trace_hash
 /verify <hash> — prove a reading is authentic via trace_hash lookup
 """
+
 from __future__ import annotations
 
 from aiogram import Router
@@ -73,7 +74,7 @@ async def cmd_verify(message: Message, command: CommandObject) -> None:
         return
 
     user_id, spread, created_at, found_hash = row
-    is_requester = (user_id == message.from_user.id)
+    is_requester = user_id == message.from_user.id
     owner_note = t("verify_yours", lang) if is_requester else t("verify_other", lang)
 
     result = (

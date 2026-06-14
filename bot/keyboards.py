@@ -13,9 +13,7 @@ def start_kb(lang: str = "en") -> InlineKeyboardMarkup:
 
 def paywall_kb(lang: str = "en") -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
-        inline_keyboard=[
-            [InlineKeyboardButton(text=t("btn_buy", lang), callback_data="buy")]
-        ]
+        inline_keyboard=[[InlineKeyboardButton(text=t("btn_buy", lang), callback_data="buy")]]
     )
 
 
