@@ -41,7 +41,6 @@ async def setup_tarot_db() -> object:
 # draw_deterministic_card unit tests (replaces ProviderResponse / calculate_*)
 # ---------------------------------------------------------------------------
 
-
 def test_deterministic_card_same_input() -> None:
     r1 = draw_deterministic_card(123456789, "2026-06-09", SALT)
     r2 = draw_deterministic_card(123456789, "2026-06-09", SALT)
@@ -77,16 +76,23 @@ def test_deterministic_card_invalid_id_out_of_range() -> None:
 # draw callback tests (via mock vm_runner)
 # ---------------------------------------------------------------------------
 
-
 def _make_successful_trace(card_name: str = "The Star") -> MagicMock:
     step = MagicMock()
+    step.step_id = "draw_card"
+    step.id = "draw_card"
     step.output = {"card_name": card_name, "interpretation": "Надежда и свет"}
+
+    interp_step = MagicMock()
+    interp_step.step_id = "llm_interpret"
+    interp_step.id = "llm_interpret"
+    interp_step.output = "Надежда и свет"
+
     trace = MagicMock()
     status = MagicMock()
     status.__str__ = lambda s: "SUCCESS"
     trace.status = status
     trace.trace_id = "tid-draw-001"
-    trace.steps = [step]
+    trace.steps = [step, interp_step]
     trace.model_dump_json = MagicMock(return_value='{"trace_id":"tid-draw-001"}')
     return trace
 
@@ -131,7 +137,7 @@ async def test_draw_callback_sends_message() -> None:
         from bot.handlers.tarot import draw
 
         callback = AsyncMock()
-        callback.from_user = MagicMock(id=111222)
+        callback.from_user = MagicMock(id=111222, language_code="ru")
         callback.message = AsyncMock()
         callback.answer = AsyncMock()
         await draw(callback)
@@ -139,4 +145,4 @@ async def test_draw_callback_sends_message() -> None:
     callback.message.answer.assert_called_once()
     text = callback.message.answer.call_args[0][0]
     assert "🔮" in text
-    assert "карту дня" in text
+    assert "карта дня" in text.lower() or "card of the day" in text.lower()
