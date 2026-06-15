@@ -3,7 +3,6 @@
 /my_traces — list the user's readings with execution_id + trace_hash
 /verify <hash> — prove a reading is authentic via trace_hash lookup
 """
-
 from __future__ import annotations
 
 from aiogram import Router
@@ -38,7 +37,7 @@ async def cmd_my_traces(message: Message) -> None:
         ts = str(row[7]) if len(row) > 7 else ""
 
         paid_mark = "👑" if is_paid else "🆓"
-        hash_line = f"`{trace_hash[:16]}…`" if trace_hash else t("traces_no_hash", lang)
+        hash_line = f"`{trace_hash[:16]}`" if trace_hash else t("traces_no_hash", lang)
         exec_line = f"`{execution_id[:8]}…`" if execution_id else "—"
 
         lines.append(
@@ -64,7 +63,7 @@ async def cmd_verify(message: Message, command: CommandObject) -> None:
         return
 
     trace_hash = command.args.strip()
-    if len(trace_hash) < 8:
+    if len(trace_hash) < 12:
         await message.answer(t("verify_invalid_hash", lang), parse_mode="Markdown")
         return
 
@@ -74,7 +73,7 @@ async def cmd_verify(message: Message, command: CommandObject) -> None:
         return
 
     user_id, spread, created_at, found_hash = row
-    is_requester = user_id == message.from_user.id
+    is_requester = (user_id == message.from_user.id)
     owner_note = t("verify_yours", lang) if is_requester else t("verify_other", lang)
 
     result = (
