@@ -1,6 +1,8 @@
 """Tarot handler — Card of the Day and Full Reading via FSM vm_runner."""
+
 from __future__ import annotations
 
+import datetime
 import logging
 
 from aiogram import Router
@@ -8,7 +10,6 @@ from aiogram.types import CallbackQuery
 
 from bot.config import LLM_MODEL, TAROT_SALT
 from bot.database import (
-    delete_pending_execution,
     get_user,
     save_pending_execution,
     save_reading,
@@ -16,8 +17,6 @@ from bot.database import (
 from bot.i18n import lang_from_user, t
 from bot.keyboards import paywall_kb, share_kb
 from bot.vm_runner import get_trace_hash, run_card_of_day, run_full_reading
-
-import datetime
 
 router = Router()
 
@@ -162,6 +161,7 @@ async def full_reading(callback: CallbackQuery) -> None:
         execution_id = str(getattr(trace, "trace_id", ""))
         await save_pending_execution(user_id, execution_id, trace.model_dump_json())
         from bot.services.payment_service import create_reading_invoice
+
         await create_reading_invoice(callback.bot, user_id, execution_id=execution_id, lang=lang)
 
     elif status.endswith(_SUCCESS):
