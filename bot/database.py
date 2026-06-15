@@ -264,8 +264,7 @@ async def get_recent_traces(limit: int = 20) -> list[tuple[int, str, str, str | 
         )
         rows = await cursor.fetchall()
         return [
-            (int(row[0]), str(row[1]), str(row[2]), str(row[3]) if row[3] else None)
-            for row in rows
+            (int(row[0]), str(row[1]), str(row[2]), str(row[3]) if row[3] else None) for row in rows
         ]
 
 
