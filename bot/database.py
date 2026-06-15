@@ -264,12 +264,13 @@ async def get_recent_traces(limit: int = 20) -> list[tuple[int, str, str, str | 
         )
         rows = await cursor.fetchall()
         return [
-            (int(row[0]), str(row[1]), str(row[2]), str(row[3]) if row[3] else None) for row in rows
+            (int(row[0]), str(row[1]), str(row[2]), str(row[3]) if row[3] else None)
+            for row in rows
         ]
 
 
 async def get_reading_by_trace_hash(trace_hash: str) -> tuple[int, str, str, str] | None:
-    """Lookup a reading by its trace_hash for user verification.
+    """Lookup a reading by trace_hash prefix (min 8 chars) for user verification.
 
     Returns (user_id, spread, created_at, trace_hash) or None.
     """
@@ -280,7 +281,7 @@ async def get_reading_by_trace_hash(trace_hash: str) -> tuple[int, str, str, str
                    datetime(created_at, 'unixepoch') as ts,
                    trace_hash
             FROM readings
-            WHERE trace_hash = ?
+            WHERE trace_hash LIKE ? || '%'
             LIMIT 1
             """,
             (trace_hash,),
