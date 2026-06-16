@@ -1,5 +1,4 @@
 """Payment handler — Telegram Stars pre-checkout + successful_payment → FSM run."""
-
 from __future__ import annotations
 
 import logging
@@ -9,9 +8,9 @@ from aiogram.types import Message, PreCheckoutQuery
 from pydantic import BaseModel, Field
 
 from bot.config import LLM_MODEL
-from bot.database import delete_pending_execution, save_reading
+from bot.database import delete_pending_execution, get_pending_execution, save_reading
 from bot.i18n import lang_from_user, t
-from bot.keyboards import share_kb
+from bot.keyboards import share_after_payment_kb, share_kb
 from bot.vm_runner import get_trace_hash, run_full_reading
 
 router = Router(name="payment_router")
@@ -100,8 +99,9 @@ async def process_successful_payment(message: Message) -> None:
     )
 
     msg = f"{t('full_reading_paid_title', lang)}\n\n{cards_text}\n\n{interpretation}"
+    kb = share_after_payment_kb(lang, trace_hash=trace_hash or "")
     if len(msg) > 4000:
         await message.answer(msg[:4000])
-        await message.answer(msg[4000:], reply_markup=share_kb(lang))
+        await message.answer(msg[4000:], reply_markup=kb)
     else:
-        await message.answer(msg, reply_markup=share_kb(lang))
+        await message.answer(msg, reply_markup=kb)
