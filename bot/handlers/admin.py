@@ -11,7 +11,7 @@ from aiogram.filters import Command, CommandObject
 from aiogram.types import FSInputFile, Message
 
 from bot.config import ADMIN_ID
-from bot.database import DB_PATH, get_recent_traces, get_top_users
+from bot.database import DB_PATH, get_recent_traces, get_top_users, increment_free_spreads
 from bot.observatory.trace_analyzer import TraceAnalyzer
 
 router = Router()
@@ -21,7 +21,7 @@ router.message.filter(F.from_user.id == ADMIN_ID)
 @router.message(Command("admin"))
 async def admin_help(message: Message) -> None:
     help_text = (
-        "⚡️ **Панель управления**\n\n"
+        "⚡️ Панель управления\n\n"
         "📈 /stats — Статистика рантайма\n"
         "👥 /users — Топ пользователей по раскладам\n"
         "🔗 /traces — Последние 20 трейсов с хэшами\n"
@@ -30,7 +30,7 @@ async def admin_help(message: Message) -> None:
         "📂 /getdb — Скачать базу данных\n"
         "📜 /getlogs — Скачать логи bot.log\n"
     )
-    await message.answer(help_text, parse_mode="Markdown")
+    await message.answer(help_text, parse_mode=None)
 
 
 @router.message(Command("stats"))
@@ -69,7 +69,7 @@ async def admin_stats(message: Message) -> None:
     paid_terminal = metrics.state_distribution.get("state_paid_terminal", 0)
 
     stats_text = (
-        "📊 **Расширенная статистика рантайма**\n\n"
+        "📊 Расширенная статистика рантайма\n\n"
         f"👤 Юзеров всего: `{total_users}`\n"
         f"💰 Оплат всего: `{paid_readings}`\n"
         f"⭐️ Выручка: `{total_stars} Stars`\n"
@@ -82,10 +82,10 @@ async def admin_stats(message: Message) -> None:
         await message.answer_photo(
             photo=chart_url,
             caption=stats_text,
-            parse_mode="Markdown",
+            parse_mode=None,
         )
     except Exception:
-        await message.answer(stats_text, parse_mode="Markdown")
+        await message.answer(stats_text, parse_mode=None)
 
 
 @router.message(Command("broadcast"))
@@ -133,14 +133,8 @@ async def admin_give(message: Message, command: CommandObject) -> None:
         await message.answer("❗ user_id и кол-во должны быть числами.")
         return
 
-    async with aiosqlite.connect(DB_PATH) as db:
-        await db.execute(
-            "UPDATE users SET free_spreads = free_spreads + ? WHERE user_id = ?",
-            (amount, target_id),
-        )
-        await db.commit()
-
-    await message.answer(f"✅ Пользователю {target_id} выдано {amount} бесплатных раскладов.")
+    await increment_free_spreads(target_id, amount=amount)
+    await message.answer(f"✅ Пользователю {target_id} выдано {amount} бесплатных раскладов.", parse_mode=None)
 
 
 @router.message(Command("getdb"))
@@ -153,10 +147,16 @@ async def admin_getdb(message: Message) -> None:
 
 @router.message(Command("getlogs"))
 async def admin_getlogs(message: Message) -> None:
+    import os
+    log_candidates = ["bot.log", "/app/bot.log", "/tmp/bot.log", "logs/bot.log"]
+    log_path = next((p for p in log_candidates if os.path.exists(p)), None)
+    if log_path is None:
+        await message.answer("❌ Файл bot.log не найден. Логирование в файл не настроено.", parse_mode=None)
+        return
     try:
-        await message.answer_document(FSInputFile("bot.log"), caption="📜 Логи")
+        await message.answer_document(FSInputFile(log_path), caption="📜 Логи")
     except Exception as e:
-        await message.answer(f"❌ Ошибка: {e}")
+        await message.answer(f"❌ Ошибка: {e}", parse_mode=None)
 
 
 @router.message(Command("users"))
@@ -166,13 +166,13 @@ async def admin_users(message: Message) -> None:
         await message.answer("👥 Пользователей пока нет.")
         return
 
-    lines = ["👥 **Топ пользователей**\n"]
+    lines = ["👥 Топ пользователей\n"]
     for i, (user_id, username, total, paid) in enumerate(rows, 1):
         name = f"@{username}" if username else f"id:{user_id}"
         cr = f"{paid / total * 100:.0f}%" if total > 0 else "—"
         lines.append(f"{i}. {name} — {total} раскладов, {paid} оплач. (CR {cr})")
 
-    await message.answer("\n".join(lines), parse_mode="Markdown")
+    await message.answer("\n".join(lines), parse_mode=None)
 
 
 @router.message(Command("traces"))
@@ -182,12 +182,12 @@ async def admin_traces(message: Message) -> None:
         await message.answer("🔗 Трейсов пока нет.")
         return
 
-    lines = ["🔗 **Последние трейсы**\n"]
+    lines = ["🔗 Последние трейсы\n"]
     for user_id, spread, ts, trace_hash in rows:
         hash_display = f"`{trace_hash[:12]}…`" if trace_hash else "_(нет хэша)_"
         lines.append(f"uid:{user_id} | {spread} | {ts[:16]} | {hash_display}")
 
-    await message.answer("\n".join(lines), parse_mode="Markdown")
+    await message.answer("\n".join(lines), parse_mode=None)
 
 
 # Alias for backward compatibility with tests
