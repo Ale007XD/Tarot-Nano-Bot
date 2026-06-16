@@ -30,7 +30,7 @@ async def cmd_my_traces(message: Message) -> None:
             if lang == "ru"
             else "🔮 No readings yet.\n\nDraw your first card!"
         )
-        await message.answer(text)
+        await message.answer(text, parse_mode=None)
         return
 
     title = "🔗 Ваши трейсы\n" if lang == "ru" else "🔗 Your Governed Traces\n"
@@ -60,7 +60,7 @@ async def cmd_my_traces(message: Message) -> None:
         else "💡 /verify <hash> — prove authenticity"
     )
     lines.append(hint)
-    await message.answer("\n\n".join(lines))
+    await message.answer("\n\n".join(lines), parse_mode=None)
 
 
 @router.message(Command("verify"))
@@ -76,7 +76,7 @@ async def cmd_verify(message: Message, command: CommandObject) -> None:
             if lang == "ru"
             else "Usage: /verify <hash>\n\nCopy the hash from /my_traces"
         )
-        await message.answer(text)
+        await message.answer(text, parse_mode=None)
         return
 
     trace_hash = command.args.strip()
@@ -86,7 +86,7 @@ async def cmd_verify(message: Message, command: CommandObject) -> None:
             if lang == "ru"
             else "Hash too short. Copy from /my_traces"
         )
-        await message.answer(text)
+        await message.answer(text, parse_mode=None)
         return
 
     row = await get_reading_by_trace_hash(trace_hash)
@@ -96,7 +96,7 @@ async def cmd_verify(message: Message, command: CommandObject) -> None:
             if lang == "ru"
             else "❌ Not found.\n\nNo reading matches this hash."
         )
-        await message.answer(text)
+        await message.answer(text, parse_mode=None)
         return
 
     db_user_id, spread, created_at, found_hash = row
@@ -121,4 +121,4 @@ async def cmd_verify(message: Message, command: CommandObject) -> None:
         f"🔒 Hash: {found_hash}\n\n"
         f"{owner_note}"
     )
-    await message.answer(result)
+    await message.answer(result, parse_mode=None)
