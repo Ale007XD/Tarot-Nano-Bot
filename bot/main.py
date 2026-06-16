@@ -14,7 +14,6 @@ from bot.config import TELEGRAM_TOKEN
 from bot.database import init_db
 from bot.handlers import admin, history, payment, referral, share, showcase, start, tarot
 
-
 _USER_COMMANDS_RU = [
     BotCommand(command="start", description="Главное меню"),
     BotCommand(command="draw", description="🃏 Карта дня"),
@@ -62,7 +61,9 @@ async def main() -> None:
     await init_db()
 
     # Register slash commands in Telegram menu
-    await bot.set_my_commands(_USER_COMMANDS_RU, scope=BotCommandScopeAllPrivateChats(), language_code="ru")
+    await bot.set_my_commands(
+        _USER_COMMANDS_RU, scope=BotCommandScopeAllPrivateChats(), language_code="ru"
+    )
     await bot.set_my_commands(_USER_COMMANDS_EN, scope=BotCommandScopeAllPrivateChats())
 
     print("Bot started")
