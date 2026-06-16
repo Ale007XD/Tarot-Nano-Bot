@@ -3,13 +3,13 @@
 When user taps "Shared → +1 free reading" after a paid reading,
 we grant one free spread. One reward per trace_hash (dedup via DB).
 """
+
 from __future__ import annotations
 
 import logging
 
 from aiogram import Router
-from aiogram.filters import Command
-from aiogram.types import CallbackQuery, Message
+from aiogram.types import CallbackQuery
 
 from bot.database import increment_free_spreads
 from bot.i18n import lang_from_user

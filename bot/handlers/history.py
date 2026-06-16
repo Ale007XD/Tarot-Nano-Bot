@@ -9,7 +9,7 @@ from bot.i18n import lang_from_user, t
 router = Router()
 
 _SPREAD_NAMES: dict[str, dict[str, str]] = {
-    "card_of_the_day":     {"ru": "Карта дня",                 "en": "Card of the Day"},
+    "card_of_the_day": {"ru": "Карта дня", "en": "Card of the Day"},
     "past_present_future": {"ru": "Прошлое–Настоящее–Будущее", "en": "Past–Present–Future"},
 }
 
@@ -45,11 +45,7 @@ async def cmd_history(message: types.Message) -> None:
         short = interpretation[:120] + "..." if len(interpretation) > 120 else interpretation
         hash_line = f"   hash: {trace_hash[:16]}" if trace_hash else ""
 
-        entry = (
-            f"{idx}. {_spread_name(spread, lang)} | {status}\n"
-            f"   {cards_drawn}\n"
-            f"   {short}\n"
-        )
+        entry = f"{idx}. {_spread_name(spread, lang)} | {status}\n   {cards_drawn}\n   {short}\n"
         if hash_line:
             entry += hash_line + "\n"
 
