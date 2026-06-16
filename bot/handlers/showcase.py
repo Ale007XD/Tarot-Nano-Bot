@@ -3,7 +3,6 @@
 /my_traces — list the user's readings with execution_id + trace_hash
 /verify <hash> — prove a reading is authentic via trace_hash lookup
 """
-
 from __future__ import annotations
 
 from aiogram import Router
@@ -16,7 +15,21 @@ from bot.i18n import lang_from_user
 router = Router()
 
 
-@router.message(Command("my_traces"))
+_SPREAD_NAMES = {
+    "card_of_the_day": {"ru": "Карта дня", "en": "Card of the Day"},
+    "past_present_future": {"ru": "Прошлое–Настоящее–Будущее", "en": "Past–Present–Future"},
+}
+
+
+def _spread_name(spread: str, lang: str) -> str:
+    return _SPREAD_NAMES.get(spread, {}).get(lang, spread)
+
+
+def _fmt_date(ts: str) -> str:
+    """Return formatted date or '—' for epoch/empty values."""
+    if not ts or ts.startswith("1970"):
+        return "—"
+    return ts[:16]
 async def cmd_my_traces(message: Message) -> None:
     if not message.from_user:
         return
@@ -45,16 +58,14 @@ async def cmd_my_traces(message: Message) -> None:
         ts = str(row[7]) if len(row) > 7 and row[7] else ""
 
         paid_mark = "👑" if is_paid else "🆓"
-        hash_display = (
-            trace_hash[:16] if trace_hash else "(нет хэша)" if lang == "ru" else "(no hash)"
-        )
+        hash_display = trace_hash[:16] if trace_hash else "(нет хэша)" if lang == "ru" else "(no hash)"
         exec_display = execution_id[:8] if execution_id else "—"
 
         lines.append(
-            f"{idx}. {paid_mark} {spread}\n"
+            f"{idx}. {paid_mark} {_spread_name(spread, lang)}\n"
             f"   exec: {exec_display}\n"
             f"   hash: {hash_display}\n"
-            f"   🕐 {ts[:16]}"
+            f"   🕐 {_fmt_date(ts)}"
         )
 
     hint = (
@@ -103,33 +114,25 @@ async def cmd_verify(message: Message, command: CommandObject) -> None:
         return
 
     db_user_id, spread, created_at, found_hash = row
-    is_requester = db_user_id == message.from_user.id
+    is_requester = (db_user_id == message.from_user.id)
 
     owner_note = (
-        ("🔮 Это ваш расклад." if is_requester else "👤 Это расклад другого пользователя.")
-        if lang == "ru"
-        else (
-            "🔮 This reading belongs to you."
-            if is_requester
-            else "👤 This reading belongs to another user."
-        )
+        "🔮 Это ваш расклад." if is_requester else "👤 Это расклад другого пользователя."
+    ) if lang == "ru" else (
+        "🔮 This reading belongs to you." if is_requester else "👤 This reading belongs to another user."
     )
 
     result = (
-        (
-            f"✅ Расклад подтверждён\n\n"
-            f"🃏 Тип: {spread}\n"
-            f"📅 Создан: {created_at[:16]}\n"
-            f"🔒 Hash: {found_hash}\n\n"
-            f"{owner_note}"
-        )
-        if lang == "ru"
-        else (
-            f"✅ Reading verified\n\n"
-            f"🃏 Spread: {spread}\n"
-            f"📅 Created: {created_at[:16]}\n"
-            f"🔒 Hash: {found_hash}\n\n"
-            f"{owner_note}"
-        )
+        f"✅ Расклад подтверждён\n\n"
+        f"🃏 Тип: {_spread_name(spread, lang)}\n"
+        f"📅 Создан: {_fmt_date(created_at)}\n"
+        f"🔒 Hash: {found_hash}\n\n"
+        f"{owner_note}"
+    ) if lang == "ru" else (
+        f"✅ Reading verified\n\n"
+        f"🃏 Spread: {_spread_name(spread, lang)}\n"
+        f"📅 Created: {_fmt_date(created_at)}\n"
+        f"🔒 Hash: {found_hash}\n\n"
+        f"{owner_note}"
     )
     await message.answer(result, parse_mode=None)
