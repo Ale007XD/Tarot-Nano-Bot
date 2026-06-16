@@ -15,6 +15,7 @@ __all__ = [
     "get_top_users",
     "get_recent_traces",
     "get_reading_by_trace_hash",
+    "increment_free_spreads",
     "save_pending_execution",
     "get_pending_execution",
     "delete_pending_execution",
@@ -204,6 +205,16 @@ async def save_pending_execution(
         await db.commit()
 
 
+async def increment_free_spreads(user_id: int, amount: int = 1) -> None:
+    """Add free spreads to user balance (share reward, admin gift, etc.)."""
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute(
+            "UPDATE users SET free_spreads = free_spreads + ? WHERE user_id = ?",
+            (amount, user_id),
+        )
+        await db.commit()
+
+
 async def get_pending_execution(
     user_id: int,
 ) -> tuple[str, str] | None:
@@ -264,7 +275,8 @@ async def get_recent_traces(limit: int = 20) -> list[tuple[int, str, str, str | 
         )
         rows = await cursor.fetchall()
         return [
-            (int(row[0]), str(row[1]), str(row[2]), str(row[3]) if row[3] else None) for row in rows
+            (int(row[0]), str(row[1]), str(row[2]), str(row[3]) if row[3] else None)
+            for row in rows
         ]
 
 
