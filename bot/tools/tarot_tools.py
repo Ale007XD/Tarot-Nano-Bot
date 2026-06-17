@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import random
 from datetime import date
+from pathlib import Path
 
 # ---------------------------------------------------------------------------
 # Deck definition
@@ -57,6 +58,62 @@ FULL_DECK: list[str] = MAJOR_ARCANA + [f"{rank} of {suit}" for suit in SUITS for
 
 assert len(FULL_DECK) == 78  # noqa: S101
 
+# ---------------------------------------------------------------------------
+# Card image filenames — index-aligned with FULL_DECK, derived from
+# rider_waite.json (deck_id=rider_waite_v1). Static to avoid runtime JSON
+# parsing as a tool-function dependency.
+# ---------------------------------------------------------------------------
+
+_MAJOR_FILES: list[str] = [
+    "the_fool.jpg",
+    "the_magician.jpg",
+    "the_high_priestess.jpg",
+    "the_empress.jpg",
+    "the_emperor.jpg",
+    "the_hierophant.jpg",
+    "the_lovers.jpg",
+    "the_chariot.jpg",
+    "strength.jpg",
+    "the_hermit.jpg",
+    "wheel_of_fortune.jpg",
+    "justice.jpg",
+    "the_hanged_man.jpg",
+    "death.jpg",
+    "temperance.jpg",
+    "the_devil.jpg",
+    "the_tower.jpg",
+    "the_star.jpg",
+    "the_moon.jpg",
+    "the_sun.jpg",
+    "judgement.jpg",
+    "the_world.jpg",
+]
+
+_SUIT_FILE_PREFIX: dict[str, str] = {
+    "Wands": "wands",
+    "Cups": "cups",
+    "Swords": "swords",
+    "Pentacles": "pentacles",
+}
+
+CARD_FILES: list[str] = _MAJOR_FILES + [
+    f"{_SUIT_FILE_PREFIX[suit]}{rank_idx + 1:02d}.jpg"
+    for suit in SUITS
+    for rank_idx in range(len(RANKS))
+]
+
+assert len(CARD_FILES) == 78  # noqa: S101
+
+CARDS_DIR: Path = Path("assets/cards")
+
+
+def get_card_image_path(card_index: int) -> Path:
+    """Resolve card_index → image file path under assets/cards/.
+
+    Reversed cards reuse the same artwork as upright (no separate asset).
+    """
+    return CARDS_DIR / CARD_FILES[card_index % 78]
+
 
 # ---------------------------------------------------------------------------
 # Tool functions — sync, **kwargs required (nano-vm constraint)
@@ -80,6 +137,7 @@ def draw_deterministic_card(
     return {
         "card_index": card_index,
         "card_name": card_name,
+        "card_file": CARD_FILES[card_index],
         "execution_date": today,
         "algorithm": "SHA-256",
     }
@@ -90,14 +148,20 @@ def draw_three_card_spread(**kwargs: object) -> dict[str, object]:
 
     Randomness is intentional — interpretation is the governed artifact.
     """
-    deck = FULL_DECK.copy()
-    random.shuffle(deck)
-    drawn = deck[:3]
+    indices = list(range(78))
+    random.shuffle(indices)
+    drawn_indices = indices[:3]
     reversed_flags = [random.choice([True, False]) for _ in range(3)]
-    cards = [f"{card} (Reversed)" if rev else card for card, rev in zip(drawn, reversed_flags)]
+    cards = [
+        f"{FULL_DECK[idx]} (Reversed)" if rev else FULL_DECK[idx]
+        for idx, rev in zip(drawn_indices, reversed_flags)
+    ]
+    card_files = [CARD_FILES[idx] for idx in drawn_indices]
     return {
         "past": cards[0],
         "present": cards[1],
         "future": cards[2],
         "cards_text": f"Past: {cards[0]}\nPresent: {cards[1]}\nFuture: {cards[2]}",
+        "card_indices": drawn_indices,
+        "card_files": card_files,
     }
