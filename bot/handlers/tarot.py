@@ -4,9 +4,11 @@ from __future__ import annotations
 
 import datetime
 import logging
+from typing import cast
 
 from aiogram import Router
 from aiogram.types import CallbackQuery, FSInputFile
+from aiogram.types.media_union import MediaUnion
 from aiogram.utils.media_group import MediaGroupBuilder
 
 from bot.config import LLM_MODEL, TAROT_SALT
@@ -214,7 +216,8 @@ async def full_reading(callback: CallbackQuery) -> None:
             builder = MediaGroupBuilder(caption=t("full_reading_title", lang))
             for p in image_paths:
                 builder.add_photo(media=FSInputFile(p))
-            await callback.message.answer_media_group(media=builder.build())
+            media = cast("list[MediaUnion]", builder.build())
+            await callback.message.answer_media_group(media=media)
         else:
             logging.warning(f"[tarot] spread images missing: {image_paths}")
 
