@@ -26,10 +26,29 @@ def _spread_name(spread: str, lang: str) -> str:
     return _SPREAD_NAMES.get(spread, {}).get(lang, spread)
 
 
-def _fmt_date(ts: str) -> str:
-    if not ts or ts.startswith("1970"):
+def _fmt_date(ts: object) -> str:
+    """Format unix timestamp (int or str) → dd.mm.yyyy, or sqlite datetime str."""
+    import datetime as _dt
+
+    if not ts:
         return "—"
-    return ts[:16]
+    # Unix integer timestamp
+    if isinstance(ts, int) or (isinstance(ts, str) and ts.isdigit()):
+        unix = int(ts)
+        if unix == 0:
+            return "—"
+        try:
+            return _dt.datetime.fromtimestamp(unix, tz=_dt.timezone.utc).strftime("%d.%m.%Y")
+        except Exception:
+            return "—"
+    # SQLite datetime string "YYYY-MM-DD HH:MM:SS"
+    s = str(ts)
+    if s.startswith("1970"):
+        return "—"
+    try:
+        return _dt.datetime.fromisoformat(s[:19]).strftime("%d.%m.%Y")
+    except Exception:
+        return s[:10]
 
 
 # ---------------------------------------------------------------------------
@@ -66,16 +85,16 @@ async def cmd_my_traces(message: Message) -> None:
         ts = str(row[7]) if len(row) > 7 and row[7] else ""
 
         paid_mark = "👑" if is_paid else "🆓"
+        date_str = _fmt_date(row[7] if len(row) > 7 else None)
         hash_display = (
             trace_hash[:16] if trace_hash else "(нет хэша)" if lang == "ru" else "(no hash)"
         )
         exec_display = execution_id[:8] if execution_id else "—"
 
         lines.append(
-            f"{idx}. {paid_mark} {_spread_name(spread, lang)}\n"
+            f"{idx}. {paid_mark} {_spread_name(spread, lang)}, {date_str}\n"
             f"   exec: {exec_display}\n"
-            f"   hash: {hash_display}\n"
-            f"   🕐 {_fmt_date(ts)}"
+            f"   hash: {hash_display}"
         )
 
     hint = (

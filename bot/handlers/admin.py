@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 import aiosqlite
 from aiogram import F, Router
 from aiogram.filters import Command, CommandObject
-from aiogram.types import FSInputFile, Message
+from aiogram.types import Message
 
 from bot.config import ADMIN_ID
 from bot.database import DB_PATH, get_recent_traces, get_top_users, increment_free_spreads
@@ -148,13 +148,23 @@ async def admin_getdb(message: Message) -> None:
 @router.message(Command("getlogs"))
 async def admin_getlogs(message: Message) -> None:
     import os
+    from aiogram.types import BufferedInputFile
+
     log_candidates = ["bot.log", "/app/bot.log", "/tmp/bot.log", "logs/bot.log"]
     log_path = next((p for p in log_candidates if os.path.exists(p)), None)
     if log_path is None:
         await message.answer("❌ Файл bot.log не найден. Логирование в файл не настроено.", parse_mode=None)
         return
     try:
-        await message.answer_document(FSInputFile(log_path), caption="📜 Логи")
+        with open(log_path, "rb") as f:
+            data = f.read()
+        # Send last 500 lines to keep file small enough for Telegram
+        lines = data.splitlines()[-500:]
+        payload = b"\n".join(lines)
+        await message.answer_document(
+            BufferedInputFile(payload, filename="bot.log"),
+            caption="📜 Логи (последние 500 строк)",
+        )
     except Exception as e:
         await message.answer(f"❌ Ошибка: {e}", parse_mode=None)
 
