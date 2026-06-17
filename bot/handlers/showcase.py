@@ -82,7 +82,6 @@ async def cmd_my_traces(message: Message) -> None:
         is_paid = bool(row[4])
         execution_id = str(row[5]) if row[5] else None
         trace_hash = str(row[6]) if row[6] else None
-        ts = str(row[7]) if len(row) > 7 and row[7] else ""
 
         paid_mark = "👑" if is_paid else "🆓"
         date_str = _fmt_date(row[7] if len(row) > 7 else None)

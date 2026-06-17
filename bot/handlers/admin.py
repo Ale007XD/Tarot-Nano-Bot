@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 import aiosqlite
 from aiogram import F, Router
 from aiogram.filters import Command, CommandObject
-from aiogram.types import Message
+from aiogram.types import FSInputFile, Message
 
 from bot.config import ADMIN_ID
 from bot.database import DB_PATH, get_recent_traces, get_top_users, increment_free_spreads
