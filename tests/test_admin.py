@@ -1,14 +1,27 @@
 # tests/test_admin.py
 import sys
 import unittest
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
-# Сначала создаем фейковый модуль config для изоляции окружения
-mock_config = MagicMock()
-mock_config.ADMIN_ID = 12345
-sys.modules["bot.config"] = mock_config
+_patcher = None
 
-# Теперь можно безопасно импортировать компонент администрирования
+
+def setUpModule() -> None:
+    """Fake bot.config only for this module.
+
+    A bare ``sys.modules["bot.config"] = MagicMock()`` at import time leaked into
+    every test collected after this file (test_database: MagicMock has no DB_PATH).
+    """
+    global _patcher
+    mock_config = MagicMock()
+    mock_config.ADMIN_ID = 12345
+    _patcher = patch.dict(sys.modules, {"bot.config": mock_config})
+    _patcher.start()
+
+
+def tearDownModule() -> None:
+    if _patcher is not None:
+        _patcher.stop()
 
 
 class TestAdmin(unittest.TestCase):
