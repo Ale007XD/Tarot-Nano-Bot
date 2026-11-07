@@ -23,15 +23,14 @@ jobs:
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install ruff mypy pydantic>=2.0 aiosqlite aiogram>=3.0 \
+          pip install ruff==0.16.7 mypy pydantic>=2.0 aiosqlite aiogram>=3.0 \
             pytest pytest-asyncio python-dotenv litellm llm-nano-vm
 
-      # Fix before check — handles imports uploaded via GitHub UI without local ruff
-      - name: Lint (Ruff fix + check)
+      # Check only: CI never rewrites code (headSha-bound CI)
+      - name: Lint (Ruff check + format check)
         run: |
-          ruff check --fix .
-          ruff format .
           ruff check .
+          ruff format --check .
 
       - name: Type check (mypy)
         run: mypy --ignore-missing-imports --strict bot/
