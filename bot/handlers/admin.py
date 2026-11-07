@@ -134,7 +134,9 @@ async def admin_give(message: Message, command: CommandObject) -> None:
         return
 
     await increment_free_spreads(target_id, amount=amount)
-    await message.answer(f"✅ Пользователю {target_id} выдано {amount} бесплатных раскладов.", parse_mode=None)
+    await message.answer(
+        f"✅ Пользователю {target_id} выдано {amount} бесплатных раскладов.", parse_mode=None
+    )
 
 
 @router.message(Command("getdb"))
@@ -148,12 +150,15 @@ async def admin_getdb(message: Message) -> None:
 @router.message(Command("getlogs"))
 async def admin_getlogs(message: Message) -> None:
     import os
+
     from aiogram.types import BufferedInputFile
 
     log_candidates = ["bot.log", "/app/bot.log", "/tmp/bot.log", "logs/bot.log"]
     log_path = next((p for p in log_candidates if os.path.exists(p)), None)
     if log_path is None:
-        await message.answer("❌ Файл bot.log не найден. Логирование в файл не настроено.", parse_mode=None)
+        await message.answer(
+            "❌ Файл bot.log не найден. Логирование в файл не настроено.", parse_mode=None
+        )
         return
     try:
         with open(log_path, "rb") as f:
